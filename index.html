@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Élite Homes · Propiedades de alto standing en Madrid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --color-obsidian:#0A0A0A;
+    --color-onyx:#1A1A1A;
+    --color-carbon:#2E2E2E;
+    --color-steel:#4A4A4A;
+    --color-ash:#6B6B6B;
+    --color-mist:#9E9E8F;
+    --color-ivory:#F5F0E8;
+    --color-bronze:#A0856A;
+    --color-warm-sand:#C4A882;
+    --color-champagne:#E8D5B7;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--color-obsidian);color:var(--color-ivory);font-family:'DM Sans',sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;}
+  body{overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+  img{display:block;max-width:100%;}
+  ::selection{background:var(--color-warm-sand);color:var(--color-obsidian);}
+
+  /* ============== NAVBAR ============== */
+  .navbar{
+    position:sticky;top:0;z-index:50;
+    height:64px;
+    background:var(--color-obsidian);
+    border-bottom:1px solid var(--color-carbon);
+    display:flex;align-items:center;
+    padding:0 48px;
+  }
+  .nav-inner{
+    display:flex;align-items:center;justify-content:space-between;
+    width:100%;max-width:1440px;margin:0 auto;
+  }
+  .logo{
+    display:flex;align-items:center;gap:14px;
+    font-family:'Syne',sans-serif;font-weight:700;font-size:18px;
+    color:var(--color-ivory);
+    letter-spacing:.02em;
+  }
+  .logo .divider{
+    color:var(--color-steel);font-weight:300;
+  }
+  .logo .demo-tag{
+    font-family:'DM Sans',sans-serif;
+    font-weight:300;
+    font-size:10px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--color-warm-sand);
+    display:inline-flex;align-items:center;gap:10px;
+  }
+  .logo .dexa-mark{
+    height:26px;width:auto;display:block;
+  }
+  footer .logo .dexa-mark{height:24px;}
+  .nav-links{
+    display:flex;gap:36px;
+    font-size:13px;
+    color:var(--color-ivory);
+  }
+  .nav-links a{
+    transition:color 200ms ease;
+    position:relative;
+    padding:6px 0;
+  }
+  .nav-links a:hover{color:var(--color-warm-sand);}
+  .nav-cta{
+    border:1px solid var(--color-warm-sand);
+    color:var(--color-warm-sand);
+    background:transparent;
+    padding:10px 18px;
+    font-size:12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    border-radius:2px;
+    transition:background 200ms ease,color 200ms ease;
+  }
+  .nav-cta:hover{background:var(--color-warm-sand);color:var(--color-obsidian);}
+
+  /* ============== HERO ============== */
+  .hero{
+    position:relative;
+    min-height:90vh;
+    display:flex;align-items:center;
+    overflow:hidden;
+    background:var(--color-obsidian);
+  }
+  .hero-bg{
+    position:absolute;inset:0;
+    background-image:url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1800&q=80');
+    background-size:cover;background-position:center;
+    filter:grayscale(20%) brightness(.85);
+  }
+  .hero-overlay{
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(10,10,10,.55) 0%,rgba(10,10,10,.7) 60%,rgba(10,10,10,.85) 100%);
+  }
+  .hero-inner{
+    position:relative;z-index:2;
+    width:100%;max-width:1440px;margin:0 auto;
+    padding:120px 48px 60px;
+  }
+  .pill-badge{
+    display:inline-flex;align-items:center;gap:10px;
+    border:1px solid var(--color-warm-sand);
+    color:var(--color-warm-sand);
+    padding:8px 14px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.15em;
+    border-radius:2px;
+    margin-bottom:32px;
+  }
+  .pill-badge::before{
+    content:"";width:6px;height:6px;background:var(--color-warm-sand);display:inline-block;
+  }
+  h1.hero-title{
+    font-family:'Syne',sans-serif;
+    font-weight:700;
+    font-size:clamp(40px,5.5vw,72px);
+    line-height:1.05;
+    letter-spacing:-.02em;
+    color:var(--color-ivory);
+    max-width:980px;
+    margin-bottom:28px;
+  }
+  h1.hero-title .accent{
+    color:var(--color-warm-sand);
+    font-style:italic;
+    font-weight:600;
+  }
+  .hero-sub{
+    font-family:'DM Sans',sans-serif;
+    font-weight:300;
+    font-size:18px;
+    line-height:1.6;
+    color:var(--color-mist);
+    max-width:560px;
+    margin-bottom:40px;
+  }
+  .hero-buttons{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:80px;}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:14px 22px;
+    font-size:13px;letter-spacing:.04em;
+    border-radius:2px;
+    transition:background 200ms ease,color 200ms ease,border-color 200ms ease;
+  }
+  .btn-primary{background:var(--color-warm-sand);color:var(--color-obsidian);font-weight:500;border:1px solid var(--color-warm-sand);}
+  .btn-primary:hover{background:var(--color-champagne);border-color:var(--color-champagne);}
+  .btn-secondary{background:transparent;color:var(--color-ivory);border:1px solid var(--color-ivory);}
+  .btn-secondary:hover{background:var(--color-ivory);color:var(--color-obsidian);}
+  .btn .arrow{transition:transform 200ms ease;}
+  .btn:hover .arrow{transform:translateX(3px);}
+
+  .hero-metrics{
+    display:flex;flex-wrap:wrap;gap:0;
+    border-top:1px solid var(--color-carbon);
+    padding-top:32px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--color-mist);
+    letter-spacing:.08em;
+  }
+  .hero-metrics .m{padding:0 28px;display:flex;align-items:baseline;gap:8px;}
+  .hero-metrics .m:first-child{padding-left:0;}
+  .hero-metrics .m + .m{border-left:1px solid var(--color-carbon);}
+  .hero-metrics .num{color:var(--color-warm-sand);font-size:18px;font-weight:400;}
+  .hero-metrics .lbl{text-transform:uppercase;color:var(--color-ash);}
+
+  /* ============== SEARCH BAR ============== */
+  .search-wrap{
+    background:var(--color-onyx);
+    border-top:1px solid var(--color-carbon);
+    border-bottom:1px solid var(--color-carbon);
+  }
+  .search{
+    max-width:1440px;margin:0 auto;
+    padding:28px 48px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr) auto;
+    gap:16px;
+    align-items:end;
+  }
+  .field{
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .field label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--color-ash);
+  }
+  .field select, .field input{
+    appearance:none;-webkit-appearance:none;
+    background:var(--color-carbon);
+    border:1px solid var(--color-steel);
+    color:var(--color-ivory);
+    font-family:'DM Sans',sans-serif;
+    font-size:14px;
+    padding:12px 14px;
+    border-radius:2px;
+    transition:border-color 200ms ease;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%23C4A882' stroke-width='1.5'><path d='M3 4.5L6 8L9 4.5'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    padding-right:36px;
+  }
+  .field select:focus, .field input:focus{outline:none;border-color:var(--color-warm-sand);}
+  .field option{background:var(--color-carbon);color:var(--color-ivory);}
+  .search-btn{
+    background:var(--color-warm-sand);
+    color:var(--color-obsidian);
+    padding:13px 28px;
+    font-weight:500;font-size:13px;letter-spacing:.05em;
+    border-radius:2px;
+    transition:background 200ms ease;
+    display:flex;align-items:center;gap:10px;
+    height:46px;
+  }
+  .search-btn:hover{background:var(--color-champagne);}
+
+  /* ============== SECTIONS ============== */
+  section.block{
+    padding:120px 48px;
+  }
+  .block-inner{max-width:1440px;margin:0 auto;}
+  .section-head{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:40px;
+    margin-bottom:56px;
+    border-bottom:1px solid var(--color-carbon);
+    padding-bottom:32px;
+  }
+  .section-head .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--color-warm-sand);
+    margin-bottom:14px;
+    display:flex;align-items:center;gap:12px;
+  }
+  .section-head .eyebrow::before{
+    content:"";width:24px;height:1px;background:var(--color-warm-sand);
+  }
+  .section-head h2{
+    font-family:'Syne',sans-serif;
+    font-weight:600;
+    font-size:clamp(32px,3.6vw,48px);
+    line-height:1.1;
+    color:var(--color-ivory);
+    letter-spacing:-.015em;
+    max-width:680px;
+  }
+  .section-head .sub{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:15px;line-height:1.6;
+    color:var(--color-mist);max-width:340px;
+  }
+
+  /* ============== PROPERTY CARDS ============== */
+  .props-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  }
+  .prop-card{
+    background:var(--color-onyx);
+    border:1px solid var(--color-carbon);
+    border-radius:2px;
+    overflow:hidden;
+    transition:border-color 200ms ease;
+    display:flex;flex-direction:column;
+  }
+  .prop-card:hover{border-color:var(--color-warm-sand);}
+  .prop-img-wrap{
+    position:relative;
+    aspect-ratio:4/3;
+    overflow:hidden;
+    background:var(--color-carbon);
+  }
+  .prop-img-wrap img{
+    width:100%;height:100%;object-fit:cover;
+    transition:opacity 200ms ease;
+  }
+  .prop-card:hover .prop-img-wrap img{opacity:.85;}
+  .prop-badge{
+    position:absolute;top:14px;left:14px;
+    background:var(--color-warm-sand);
+    color:var(--color-obsidian);
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    padding:6px 10px;
+    border-radius:2px;
+  }
+  .prop-ref{
+    position:absolute;top:14px;right:14px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.1em;
+    color:var(--color-ivory);
+    background:rgba(10,10,10,.65);
+    border:1px solid var(--color-carbon);
+    padding:6px 10px;border-radius:2px;
+  }
+  .prop-body{padding:24px;display:flex;flex-direction:column;gap:14px;flex:1;}
+  .prop-price{
+    font-family:'Syne',sans-serif;
+    font-weight:600;
+    font-size:28px;
+    color:var(--color-ivory);
+    letter-spacing:-.01em;
+  }
+  .prop-name{
+    font-family:'DM Sans',sans-serif;font-weight:400;
+    font-size:15px;
+    color:var(--color-mist);
+    line-height:1.4;
+  }
+  .prop-details{
+    display:flex;flex-wrap:wrap;gap:0;
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:13px;
+    color:var(--color-ash);
+    border-top:1px solid var(--color-carbon);
+    padding-top:14px;
+    margin-top:auto;
+  }
+  .prop-details span{padding-right:14px;}
+  .prop-details span + span{padding-left:14px;border-left:1px solid var(--color-carbon);}
+  .prop-cta{
+    display:inline-flex;align-items:center;gap:8px;
+    color:var(--color-warm-sand);
+    font-family:'DM Sans',sans-serif;font-weight:500;
+    font-size:13px;letter-spacing:.04em;
+    padding-top:6px;
+    transition:gap 200ms ease;
+  }
+  .prop-card:hover .prop-cta{gap:14px;}
+
+  /* ============== ZONES ============== */
+  .zones-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+  }
+  .zone-card{
+    position:relative;
+    aspect-ratio:3/4;
+    overflow:hidden;
+    border-radius:2px;
+    border:1px solid var(--color-carbon);
+    cursor:pointer;
+    transition:border-color 200ms ease;
+  }
+  .zone-card:hover{border-color:var(--color-warm-sand);}
+  .zone-card .zone-img{
+    position:absolute;inset:0;
+    background-size:cover;background-position:center;
+    filter:grayscale(40%) brightness(.55);
+    transition:filter 200ms ease;
+  }
+  .zone-card:hover .zone-img{filter:grayscale(0%) brightness(.7);}
+  .zone-card .zone-overlay{
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(10,10,10,.1) 0%,rgba(10,10,10,.85) 100%);
+  }
+  .zone-card .zone-body{
+    position:absolute;inset:0;
+    padding:28px;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    z-index:2;
+  }
+  .zone-card .zone-meta{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--color-warm-sand);
+    margin-bottom:10px;
+  }
+  .zone-card h3{
+    font-family:'Syne',sans-serif;font-weight:600;
+    font-size:24px;color:var(--color-ivory);
+    line-height:1.1;margin-bottom:10px;
+    letter-spacing:-.01em;
+  }
+  .zone-card p{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:13px;line-height:1.5;color:var(--color-mist);
+  }
+
+  /* ============== SERVICES ============== */
+  .services-section{background:var(--color-carbon);}
+  .services-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--color-steel);
+    border:1px solid var(--color-steel);
+  }
+  .service{
+    background:var(--color-carbon);
+    padding:48px 40px;
+    display:flex;flex-direction:column;gap:20px;
+    transition:background 200ms ease;
+  }
+  .service:hover{background:var(--color-onyx);}
+  .service-icon{
+    width:48px;height:48px;
+    color:var(--color-warm-sand);
+  }
+  .service-icon svg{width:100%;height:100%;}
+  .service-num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.2em;
+    color:var(--color-ash);
+  }
+  .service h3{
+    font-family:'Syne',sans-serif;font-weight:600;
+    font-size:24px;color:var(--color-ivory);
+    letter-spacing:-.01em;
+  }
+  .service p{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:14px;line-height:1.65;color:var(--color-mist);
+  }
+  .service a.more{
+    color:var(--color-warm-sand);
+    font-size:13px;font-weight:500;letter-spacing:.04em;
+    display:inline-flex;align-items:center;gap:8px;
+    margin-top:8px;
+    transition:gap 200ms ease;
+  }
+  .service:hover a.more{gap:14px;}
+
+  /* ============== LEAD / CONTACT ============== */
+  .lead-section{background:var(--color-onyx);}
+  .lead-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:flex-start;
+  }
+  .lead-left h2{
+    font-family:'Syne',sans-serif;font-weight:600;
+    font-size:clamp(32px,3.6vw,48px);line-height:1.1;
+    color:var(--color-ivory);letter-spacing:-.015em;
+    margin-bottom:24px;
+  }
+  .lead-left p{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:16px;line-height:1.65;color:var(--color-mist);
+    margin-bottom:32px;max-width:440px;
+  }
+  .lead-stats{
+    display:flex;flex-direction:column;gap:1px;
+    background:var(--color-carbon);
+    border:1px solid var(--color-carbon);
+  }
+  .lead-stat{
+    background:var(--color-onyx);
+    padding:20px 24px;
+    display:flex;align-items:baseline;justify-content:space-between;gap:24px;
+  }
+  .lead-stat .k{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--color-ash);
+  }
+  .lead-stat .v{
+    font-family:'Syne',sans-serif;font-weight:600;
+    font-size:18px;color:var(--color-ivory);
+  }
+  .lead-form{
+    background:var(--color-obsidian);
+    border:1px solid var(--color-carbon);
+    border-radius:2px;
+    padding:40px;
+  }
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .form-grid .full{grid-column:1/-1;}
+  .form-grid .field input,
+  .form-grid .field select,
+  .form-grid .field textarea{
+    background:var(--color-carbon);
+    border:1px solid var(--color-steel);
+    color:var(--color-ivory);
+    font-family:'DM Sans',sans-serif;
+    font-size:14px;
+    padding:12px 14px;
+    border-radius:2px;
+    transition:border-color 200ms ease;
+    width:100%;
+    background-image:none;
+  }
+  .form-grid .field textarea{resize:vertical;min-height:110px;font-family:'DM Sans',sans-serif;}
+  .form-grid .field input::placeholder,
+  .form-grid .field textarea::placeholder{color:var(--color-ash);}
+  .form-grid .field input:focus,
+  .form-grid .field select:focus,
+  .form-grid .field textarea:focus{outline:none;border-color:var(--color-warm-sand);}
+  .form-grid .field select{
+    appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%23C4A882' stroke-width='1.5'><path d='M3 4.5L6 8L9 4.5'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    padding-right:36px;
+  }
+  .form-submit{
+    background:var(--color-warm-sand);
+    color:var(--color-obsidian);
+    padding:14px 22px;
+    font-weight:500;font-size:13px;letter-spacing:.05em;
+    border-radius:2px;
+    transition:background 200ms ease;
+    margin-top:8px;
+    display:inline-flex;align-items:center;gap:10px;
+  }
+  .form-submit:hover{background:var(--color-champagne);}
+  .form-note{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.1em;
+    color:var(--color-mist);
+    margin-top:18px;
+    display:flex;align-items:center;gap:10px;
+    border-top:1px solid var(--color-carbon);
+    padding-top:18px;
+  }
+  .form-note .tag{
+    color:var(--color-warm-sand);
+    border:1px solid var(--color-warm-sand);
+    padding:2px 6px;border-radius:2px;font-size:10px;
+  }
+
+  /* ============== FOOTER ============== */
+  footer{
+    background:var(--color-obsidian);
+    border-top:1px solid var(--color-carbon);
+    padding:60px 48px 32px;
+  }
+  .footer-inner{max-width:1440px;margin:0 auto;}
+  .footer-top{
+    display:grid;grid-template-columns:1fr auto;gap:40px;
+    padding-bottom:32px;
+    border-bottom:1px solid var(--color-carbon);
+    align-items:center;
+  }
+  .footer-brand .logo{margin-bottom:18px;}
+  .footer-brand p{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:13px;line-height:1.65;color:var(--color-ash);max-width:280px;
+  }
+  .footer-cols{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:32px;
+  }
+  .footer-col h4{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--color-warm-sand);margin-bottom:18px;
+  }
+  .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:10px;}
+  .footer-col a{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:13px;color:var(--color-mist);
+    transition:color 200ms ease;
+  }
+  .footer-col a:hover{color:var(--color-warm-sand);}
+  .footer-contact{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:13px;color:var(--color-mist);
+    line-height:1.7;
+  }
+  .footer-contact .ck{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--color-ash);
+    display:block;margin-bottom:6px;
+  }
+  .footer-bottom{
+    padding-top:24px;
+    display:flex;justify-content:center;align-items:center;gap:24px;flex-wrap:wrap;
+  }
+  .footer-bottom .copy{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:12px;color:var(--color-ash);
+  }
+  .footer-bottom .credit{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:12px;color:var(--color-ash);
+    text-align:center;flex:1;
+  }
+  .footer-bottom .credit a{color:var(--color-warm-sand);}
+  .footer-bottom .credit a:hover{text-decoration:underline;}
+
+  /* ============== DEMO PILL ============== */
+  .demo-pill{
+    position:fixed;
+    bottom:24px;left:24px;
+    z-index:100;
+    background:var(--color-obsidian);
+    border:1px solid var(--color-warm-sand);
+    border-radius:999px;
+    padding:8px 14px;
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.12em;
+    color:var(--color-warm-sand);
+    transition:background 200ms ease;
+  }
+  .demo-pill:hover{background:var(--color-onyx);}
+  .demo-pill .dot{
+    width:6px;height:6px;background:var(--color-warm-sand);border-radius:50%;
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:1;}
+    50%{opacity:.35;}
+  }
+
+  /* ============== MOBILE ============== */
+  @media(max-width:768px){
+    .navbar{padding:0 20px;}
+    .nav-links{display:none;}
+    .hero-inner{padding:80px 20px 40px;}
+    h1.hero-title{font-size:40px;}
+    .hero-metrics{flex-direction:column;align-items:flex-start;gap:14px;}
+    .hero-metrics .m{padding:0;border-left:none !important;}
+    .search{grid-template-columns:1fr;padding:24px 20px;}
+    section.block{padding:72px 20px;}
+    .section-head{flex-direction:column;align-items:flex-start;gap:18px;}
+    .props-grid{grid-template-columns:1fr;}
+    .zones-grid{grid-template-columns:1fr 1fr;}
+    .services-grid{grid-template-columns:1fr;}
+    .lead-grid{grid-template-columns:1fr;gap:48px;}
+    .lead-form{padding:24px;}
+    .form-grid{grid-template-columns:1fr;}
+    .footer-top{grid-template-columns:1fr;gap:40px;}
+    .footer-cols{grid-template-columns:1fr 1fr;gap:24px;}
+    .demo-pill{bottom:16px;left:16px;font-size:10px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- =================== NAVBAR =================== -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="#" class="logo" aria-label="Élite Homes — demo by DEXA Advisory">
+      Élite Homes
+      <span class="divider">│</span>
+      <span class="demo-tag">demo by <img src="assets/dexa-advisory.png" alt="DEXA Advisory" class="dexa-mark" /></span>
+    </a>
+    <div class="nav-links">
+      <a href="#propiedades">Propiedades</a>
+      <a href="#zonas">Zonas</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#contacto">Contacto</a>
+    </div>
+    <button class="nav-cta">Hablar con un Agente</button>
+  </div>
+</nav>
+
+<!-- =================== HERO =================== -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-inner">
+    <div class="pill-badge">MADRID · PROPIEDADES PREMIUM</div>
+    <h1 class="hero-title">
+      Encuentra tu hogar<br>
+      donde otros solo ven <span class="accent">inversión.</span>
+    </h1>
+    <p class="hero-sub">Selección exclusiva de viviendas de alto standing en las mejores zonas de Madrid.</p>
+    <div class="hero-buttons">
+      <a href="#propiedades" class="btn btn-primary">Ver Propiedades <span class="arrow">→</span></a>
+      <a href="#contacto" class="btn btn-secondary">Solicitar Valoración</a>
+    </div>
+    <div class="hero-metrics">
+      <div class="m"><span class="num">+340</span><span class="lbl">Propiedades</span></div>
+      <div class="m"><span class="num">12</span><span class="lbl">Años de experiencia</span></div>
+      <div class="m"><span class="num">98%</span><span class="lbl">Clientes satisfechos</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== SEARCH =================== -->
+<div class="search-wrap">
+  <form class="search" id="property-search" onsubmit="event.preventDefault();">
+    <div class="field">
+      <label for="search-type">Tipo</label>
+      <select id="search-type" name="type">
+        <option>Cualquiera</option>
+        <option>Piso</option>
+        <option>Villa</option>
+        <option>Ático</option>
+        <option>Local</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="search-zone">Zona</label>
+      <select id="search-zone" name="zone">
+        <option>Cualquier zona</option>
+        <option>Pozuelo de Alarcón</option>
+        <option>Barrio de Salamanca</option>
+        <option>Chamberí</option>
+        <option>La Moraleja</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="search-price">Precio máx.</label>
+      <select id="search-price" name="price">
+        <option>Sin límite</option>
+        <option>500.000 €</option>
+        <option>1.000.000 €</option>
+        <option>2.500.000 €</option>
+        <option>5.000.000 €</option>
+        <option>10.000.000 €</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="search-rooms">Habitaciones</label>
+      <select id="search-rooms" name="rooms">
+        <option>Indiferente</option>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4+</option>
+      </select>
+    </div>
+    <button type="submit" class="search-btn">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4.5"/><path d="M9.5 9.5L12.5 12.5"/></svg>
+      Buscar
+    </button>
+  </form>
+</div>
+
+<!-- =================== PROPIEDADES =================== -->
+<section class="block" id="propiedades">
+  <div class="block-inner">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">01 — Catálogo</div>
+        <h2>Selección Premium</h2>
+      </div>
+    </div>
+
+    <div class="props-grid">
+
+      <article class="prop-card">
+        <div class="prop-img-wrap">
+          <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80" alt="Ático en Barrio de Salamanca" loading="lazy" />
+          <span class="prop-badge">EXCLUSIVA</span>
+          <span class="prop-ref">REF · EH-2041</span>
+        </div>
+        <div class="prop-body">
+          <div class="prop-price">1.250.000 €</div>
+          <div class="prop-name">Ático de lujo · Barrio de Salamanca</div>
+          <div class="prop-details">
+            <span>180 m²</span><span>3 hab</span><span>2 baños</span><span>Terraza</span>
+          </div>
+          <a href="#" class="prop-cta">Ver detalles →</a>
+        </div>
+      </article>
+
+      <article class="prop-card">
+        <div class="prop-img-wrap">
+          <img src="https://images.unsplash.com/photo-1613977257363-707ba9348227?w=900&q=80" alt="Villa en La Moraleja" loading="lazy" />
+          <span class="prop-badge">NUEVA</span>
+          <span class="prop-ref">REF · EH-2087</span>
+        </div>
+        <div class="prop-body">
+          <div class="prop-price">3.890.000 €</div>
+          <div class="prop-name">Villa contemporánea · La Moraleja</div>
+          <div class="prop-details">
+            <span>620 m²</span><span>5 hab</span><span>4 baños</span><span>Piscina</span>
+          </div>
+          <a href="#" class="prop-cta">Ver detalles →</a>
+        </div>
+      </article>
+
+      <article class="prop-card">
+        <div class="prop-img-wrap">
+          <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80" alt="Piso reformado en Chamberí" loading="lazy" />
+          <span class="prop-badge">EXCLUSIVA</span>
+          <span class="prop-ref">REF · EH-2103</span>
+        </div>
+        <div class="prop-body">
+          <div class="prop-price">875.000 €</div>
+          <div class="prop-name">Piso señorial reformado · Chamberí</div>
+          <div class="prop-details">
+            <span>145 m²</span><span>3 hab</span><span>2 baños</span><span>Balcón</span>
+          </div>
+          <a href="#" class="prop-cta">Ver detalles →</a>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- =================== ZONAS =================== -->
+<section class="block" id="zonas" style="background:var(--color-onyx);">
+  <div class="block-inner">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">02 — Cobertura</div>
+        <h2>Dónde operamos</h2>
+      </div>
+    </div>
+
+    <div class="zones-grid">
+      <div class="zone-card">
+        <div class="zone-img" style="background-image:url('https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&q=80');"></div>
+        <div class="zone-overlay"></div>
+        <div class="zone-body">
+          <div class="zone-meta">42 propiedades</div>
+          <h3>Pozuelo de Alarcón</h3>
+          <p>Chalets en urbanizaciones cerradas.</p>
+        </div>
+      </div>
+
+      <div class="zone-card">
+        <div class="zone-img" style="background-image:url('https://images.unsplash.com/photo-1559599101-f09722fb4948?w=800&q=80');"></div>
+        <div class="zone-overlay"></div>
+        <div class="zone-body">
+          <div class="zone-meta">78 propiedades</div>
+          <h3>Barrio de Salamanca</h3>
+          <p>Fincas regias en la milla de oro.</p>
+        </div>
+      </div>
+
+      <div class="zone-card">
+        <div class="zone-img" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80');"></div>
+        <div class="zone-overlay"></div>
+        <div class="zone-body">
+          <div class="zone-meta">31 propiedades</div>
+          <h3>La Moraleja</h3>
+          <p>Villas en una urbanización privada.</p>
+        </div>
+      </div>
+
+      <div class="zone-card">
+        <div class="zone-img" style="background-image:url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80');"></div>
+        <div class="zone-overlay"></div>
+        <div class="zone-body">
+          <div class="zone-meta">56 propiedades</div>
+          <h3>Chamberí</h3>
+          <p>Fincas señoriales rehabilitadas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== SERVICIOS =================== -->
+<section class="block services-section" id="servicios">
+  <div class="block-inner">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">03 — Servicios</div>
+        <h2>Asesoramiento integral.</h2>
+      </div>
+    </div>
+
+    <div class="services-grid">
+      <div class="service">
+        <div class="service-icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 26 L24 8 L42 26"/>
+            <path d="M10 24 V42 H38 V24"/>
+            <path d="M20 42 V30 H28 V42"/>
+          </svg>
+        </div>
+        <div class="service-num">01</div>
+        <h3>Compra y Venta</h3>
+        <p>Estrategia de precio, negociación discreta y soporte jurídico de principio a fin.</p>
+      </div>
+
+      <div class="service">
+        <div class="service-icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="8" y="14" width="32" height="22"/>
+            <path d="M8 22 H40"/>
+            <circle cx="16" cy="29" r="1.2" fill="currentColor"/>
+            <path d="M22 28 H34"/>
+            <path d="M22 32 H30"/>
+          </svg>
+        </div>
+        <div class="service-num">02</div>
+        <h3>Gestión de Alquileres</h3>
+        <p>Selección de inquilinos, gestión contractual y reporting mensual.</p>
+      </div>
+
+      <div class="service">
+        <div class="service-icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 40 H40"/>
+            <path d="M8 40 V8"/>
+            <path d="M12 32 L20 24 L26 28 L40 12"/>
+            <path d="M34 12 H40 V18"/>
+          </svg>
+        </div>
+        <div class="service-num">03</div>
+        <h3>Valoraciones</h3>
+        <p>Informes basados en comparables reales y análisis hiperlocal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== LEAD / CONTACTO =================== -->
+<section class="block lead-section" id="contacto">
+  <div class="block-inner">
+    <div class="lead-grid">
+      <div class="lead-left">
+        <div class="eyebrow" style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--color-warm-sand);margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+          <span style="width:24px;height:1px;background:var(--color-warm-sand);display:inline-block;"></span>
+          04 — Contacto
+        </div>
+        <h2>¿Tienes una propiedad para vender?</h2>
+        <p>Solicita una valoración confidencial. Te respondemos en un plazo máximo de 48 horas.</p>
+      </div>
+
+      <form class="lead-form" id="lead-form" onsubmit="event.preventDefault(); handleLeadSubmit();">
+        <div class="form-grid">
+          <div class="field full">
+            <label for="lead-name">Nombre completo</label>
+            <input type="text" id="lead-name" name="name" placeholder="Carmen García" required />
+          </div>
+          <div class="field">
+            <label for="lead-phone">Teléfono</label>
+            <input type="tel" id="lead-phone" name="phone" placeholder="+34 600 000 000" required />
+          </div>
+          <div class="field">
+            <label for="lead-zone">Zona</label>
+            <select id="lead-zone" name="zone">
+              <option>Pozuelo de Alarcón</option>
+              <option>Barrio de Salamanca</option>
+              <option>Chamberí</option>
+              <option>La Moraleja</option>
+              <option>Otra</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="lead-message">Mensaje</label>
+            <textarea id="lead-message" name="message" placeholder="Cuéntanos brevemente sobre tu propiedad: superficie, estado, plazos…"></textarea>
+          </div>
+          <div class="full">
+            <button type="submit" class="form-submit">Enviar consulta <span class="arrow">→</span></button>
+          </div>
+        </div>
+        <div class="form-note">
+          <span class="tag">DEMO</span>
+          Este formulario está conectado al sistema de leads de DEXA Advisory
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- =================== FOOTER =================== -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#" class="logo">
+          Élite Homes
+          <span class="divider">│</span>
+          <span class="demo-tag">demo by <img src="assets/dexa-advisory.png" alt="DEXA Advisory" class="dexa-mark" /></span>
+        </a>
+      </div>
+
+      <div class="footer-contact">
+        <span class="ck">Oficina Madrid</span>
+        Calle de Serrano, 41 · 28001 Madrid<br>
+        +34 91 000 00 00 · hola@elitehomes.example
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="credit">Este sitio es un prototipo funcional desarrollado por DEXA Advisory · <a href="https://dexaadvisory.com">dexaadvisory.com</a></div>
+    </div>
+  </div>
+</footer>
+
+<!-- =================== STICKY DEMO PILL =================== -->
+<a href="#" class="demo-pill" id="demo-pill" aria-label="Entorno de demostración DEXA Advisory">
+  <span class="dot"></span>
+  DEXA Advisory · Entorno de Demostración
+</a>
+
+<!-- =================== CHAT WIDGET =================== -->
+<div class="chat-widget" id="chat-widget" aria-live="polite">
+
+  <!-- Trigger button -->
+  <button class="chat-trigger" id="chat-trigger" aria-label="Abrir chat con agente">
+    <span class="chat-trigger-icon chat-icon-open">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 2H2C1.4 2 1 2.4 1 3v13c0 .6.4 1 1 1h3v4l4.5-4H20c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1z"/>
+        <path d="M6 8h10M6 12h6"/>
+      </svg>
+    </span>
+    <span class="chat-trigger-icon chat-icon-close" style="display:none;">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M2 2l14 14M16 2L2 16"/>
+      </svg>
+    </span>
+    <span class="chat-trigger-label">Agente</span>
+    <span class="chat-trigger-badge" id="chat-badge"></span>
+  </button>
+
+  <!-- Chat panel -->
+  <div class="chat-panel" id="chat-panel" aria-hidden="true">
+
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="chat-header-avatar">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="6" r="3"/>
+          <path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7"/>
+        </svg>
+      </div>
+      <div class="chat-header-info">
+        <div class="chat-header-name">Élite Homes · Agente</div>
+        <div class="chat-header-status"><span class="chat-status-dot"></span>En línea</div>
+      </div>
+      <div class="chat-header-meta">DEXA Advisory</div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chat-messages"></div>
+
+    <!-- Quick replies -->
+    <div class="chat-quick" id="chat-quick"></div>
+
+    <!-- Typing indicator (hidden by default) -->
+    <div class="chat-typing" id="chat-typing" style="display:none;">
+      <span></span><span></span><span></span>
+    </div>
+
+    <!-- Input -->
+    <form class="chat-input-wrap" id="chat-form" onsubmit="chatSend(event)">
+      <input
+        type="text"
+        id="chat-input"
+        class="chat-input"
+        placeholder="Escribe un mensaje…"
+        autocomplete="off"
+        maxlength="200"
+      />
+      <button type="submit" class="chat-send" aria-label="Enviar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2L2 7.5l5 1.5 1.5 5L14 2z"/>
+        </svg>
+      </button>
+    </form>
+    <div class="chat-footer-note">
+      <span>Agente automatizado · </span><span style="color:var(--color-warm-sand);">DEXA Advisory</span>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  /* ============== CHAT WIDGET ============== */
+  .chat-widget{
+    position:fixed;
+    bottom:24px;right:24px;
+    z-index:200;
+    display:flex;flex-direction:column;align-items:flex-end;gap:16px;
+  }
+
+  /* Trigger button */
+  .chat-trigger{
+    display:inline-flex;align-items:center;gap:10px;
+    background:var(--color-warm-sand);
+    color:var(--color-obsidian);
+    border:none;
+    border-radius:2px;
+    padding:13px 20px;
+    font-family:'DM Sans',sans-serif;
+    font-weight:500;font-size:13px;letter-spacing:.04em;
+    cursor:pointer;
+    position:relative;
+    transition:background 200ms ease,color 200ms ease;
+  }
+  .chat-trigger:hover{background:var(--color-champagne);}
+  .chat-trigger-badge{
+    position:absolute;top:-6px;right:-6px;
+    width:12px;height:12px;
+    background:#E05A4A;
+    border-radius:50%;
+    border:2px solid var(--color-obsidian);
+    display:none;
+  }
+  .chat-trigger-badge.visible{display:block;}
+
+  /* Panel */
+  .chat-panel{
+    width:360px;
+    background:var(--color-onyx);
+    border:1px solid var(--color-carbon);
+    border-radius:2px;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    /* hidden state */
+    opacity:0;
+    transform:translateY(12px) scale(.97);
+    pointer-events:none;
+    transition:opacity 220ms ease,transform 220ms ease;
+    max-height:560px;
+  }
+  .chat-panel.open{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    pointer-events:all;
+  }
+
+  /* Header */
+  .chat-header{
+    background:var(--color-obsidian);
+    border-bottom:1px solid var(--color-carbon);
+    padding:16px 20px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .chat-header-avatar{
+    width:36px;height:36px;
+    border:1px solid var(--color-warm-sand);
+    border-radius:2px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--color-warm-sand);
+    flex-shrink:0;
+  }
+  .chat-header-info{flex:1;}
+  .chat-header-name{
+    font-family:'Syne',sans-serif;font-weight:600;
+    font-size:13px;color:var(--color-ivory);letter-spacing:.01em;
+  }
+  .chat-header-status{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.12em;
+    color:var(--color-mist);
+    display:flex;align-items:center;gap:6px;margin-top:3px;
+  }
+  .chat-status-dot{
+    width:6px;height:6px;background:#5DB87A;border-radius:50%;
+    animation:pulse 2.5s ease-in-out infinite;
+  }
+  .chat-header-meta{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--color-warm-sand);
+  }
+
+  /* Messages */
+  .chat-messages{
+    flex:1;overflow-y:auto;
+    padding:20px 16px;
+    display:flex;flex-direction:column;gap:12px;
+    scrollbar-width:thin;
+    scrollbar-color:var(--color-carbon) transparent;
+    min-height:200px;max-height:300px;
+  }
+  .chat-msg{
+    display:flex;flex-direction:column;gap:4px;
+    max-width:86%;
+  }
+  .chat-msg.agent{align-self:flex-start;}
+  .chat-msg.user{align-self:flex-end;align-items:flex-end;}
+
+  .chat-msg .bubble{
+    padding:11px 14px;
+    border-radius:2px;
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:13px;line-height:1.55;
+  }
+  .chat-msg.agent .bubble{
+    background:var(--color-carbon);
+    color:var(--color-ivory);
+    border:1px solid var(--color-steel);
+    border-bottom-left-radius:0;
+  }
+  .chat-msg.user .bubble{
+    background:var(--color-warm-sand);
+    color:var(--color-obsidian);
+    font-weight:400;
+    border-bottom-right-radius:0;
+  }
+  .chat-msg .msg-time{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:.1em;
+    color:var(--color-steel);
+    padding:0 2px;
+  }
+
+  /* Quick replies */
+  .chat-quick{
+    padding:0 16px 12px;
+    display:flex;flex-wrap:wrap;gap:8px;
+  }
+  .quick-btn{
+    background:transparent;
+    border:1px solid var(--color-steel);
+    color:var(--color-mist);
+    font-family:'DM Sans',sans-serif;font-weight:400;
+    font-size:12px;
+    padding:7px 12px;
+    border-radius:2px;
+    cursor:pointer;
+    transition:border-color 200ms ease,color 200ms ease;
+  }
+  .quick-btn:hover{border-color:var(--color-warm-sand);color:var(--color-warm-sand);}
+
+  /* Typing indicator */
+  .chat-typing{
+    padding:0 20px 4px;
+    display:flex;align-items:center;gap:4px;
+  }
+  .chat-typing span{
+    width:6px;height:6px;
+    background:var(--color-mist);
+    border-radius:50%;
+    animation:typing-bounce 1.1s ease-in-out infinite;
+  }
+  .chat-typing span:nth-child(2){animation-delay:.18s;}
+  .chat-typing span:nth-child(3){animation-delay:.36s;}
+  @keyframes typing-bounce{
+    0%,80%,100%{transform:translateY(0);opacity:.4;}
+    40%{transform:translateY(-5px);opacity:1;}
+  }
+
+  /* Input */
+  .chat-input-wrap{
+    display:flex;align-items:center;gap:0;
+    border-top:1px solid var(--color-carbon);
+  }
+  .chat-input{
+    flex:1;
+    background:var(--color-obsidian);
+    border:none;
+    color:var(--color-ivory);
+    font-family:'DM Sans',sans-serif;font-weight:300;font-size:13px;
+    padding:14px 16px;
+    outline:none;
+  }
+  .chat-input::placeholder{color:var(--color-ash);}
+  .chat-send{
+    background:none;border:none;
+    padding:14px 16px;
+    color:var(--color-warm-sand);
+    cursor:pointer;
+    transition:color 200ms ease;
+    border-left:1px solid var(--color-carbon);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .chat-send:hover{color:var(--color-champagne);}
+
+  .chat-footer-note{
+    padding:8px 16px 12px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:.1em;
+    color:var(--color-steel);
+    text-align:center;
+    border-top:1px solid var(--color-carbon);
+  }
+
+  @media(max-width:768px){
+    .chat-widget{bottom:16px;right:16px;}
+    .chat-panel{width:calc(100vw - 32px);}
+    .chat-trigger-label{display:none;}
+  }
+</style>
+
+<script>
+  /* ============== CHAT AGENT ============== */
+  (function(){
+    const trigger  = document.getElementById('chat-trigger');
+    const panel    = document.getElementById('chat-panel');
+    const messages = document.getElementById('chat-messages');
+    const quickWrap= document.getElementById('chat-quick');
+    const typing   = document.getElementById('chat-typing');
+    const input    = document.getElementById('chat-input');
+    const badge    = document.getElementById('chat-badge');
+    const iconOpen = trigger.querySelector('.chat-icon-open');
+    const iconClose= trigger.querySelector('.chat-icon-close');
+
+    let isOpen = false;
+    let started = false;
+
+    // ---- knowledge base ----
+    const KB = [
+      {
+        patterns: ['precio','precios','cuánto','coste','cuesta','costar','rango'],
+        reply: 'Nuestro catálogo va desde <strong>650.000 €</strong> para pisos en Chamberí hasta <strong>más de 4 M€</strong> para villas en La Moraleja. ¿Tienes un presupuesto en mente?',
+        quick: ['Menos de 1 M€','Entre 1 y 3 M€','Más de 3 M€']
+      },
+      {
+        patterns: ['zona','zonas','dónde','madrid','salamanca','chamberí','pozuelo','moraleja'],
+        reply: 'Operamos en las cuatro zonas prime de Madrid: <strong>Barrio de Salamanca</strong>, <strong>Pozuelo de Alarcón</strong>, <strong>La Moraleja</strong> y <strong>Chamberí</strong>. ¿Te interesa alguna en particular?',
+        quick: ['Salamanca','Pozuelo','La Moraleja','Chamberí']
+      },
+      {
+        patterns: ['salamanca'],
+        reply: '**Barrio de Salamanca** es nuestra zona más demandada. Actualmente tenemos <strong>78 inmuebles</strong>, desde pisos de 120 m² hasta áticos con terraza en la milla de oro. ¿Buscas residencia habitual o inversión?'
+      },
+      {
+        patterns: ['pozuelo'],
+        reply: 'En <strong>Pozuelo de Alarcón</strong> contamos con <strong>42 propiedades</strong>, mayoritariamente chalets en urbanizaciones privadas con piscina y jardín. Zona ideal para familias.'
+      },
+      {
+        patterns: ['moraleja','la moraleja'],
+        reply: 'La Moraleja es nuestro segmento más exclusivo: <strong>31 villas</strong> desde 500 m², con parcelas de hasta 3.000 m², seguridad 24h y club privado. Precios desde 2,5 M€.'
+      },
+      {
+        patterns: ['chamberí'],
+        reply: 'Chamberí reúne <strong>56 propiedades</strong>, destacando fincas señoriales rehabilitadas de los años 20–40. Muy demandado por su arquitectura y conectividad al centro.'
+      },
+      {
+        patterns: ['ático','atico','penthouse','terraza'],
+        reply: 'Tenemos <strong>12 áticos disponibles</strong> con terraza, desde 140 m² en Chamberí hasta 280 m² en Salamanca. ¿Prefieres orientación sur o vistas al parque?'
+      },
+      {
+        patterns: ['villa','chalet','unifamiliar'],
+        reply: 'Nuestro catálogo de villas incluye propiedades desde 400 m² con parcela. Las más populares están en La Moraleja y Pozuelo. ¿Cuántas habitaciones necesitas?',
+        quick: ['3 habitaciones','4 habitaciones','5 o más']
+      },
+      {
+        patterns: ['valoración','valorar','tasar','tasación','vender','vendo','mi piso','mi propiedad'],
+        reply: 'Realizamos valoraciones confidenciales sin compromiso. Puedes dejarnos tus datos en el <a href="#contacto" style="color:var(--color-warm-sand)">formulario de contacto</a> y un agente te responderá en menos de 48 horas.',
+        quick: ['Ir al formulario']
+      },
+      {
+        patterns: ['alquiler','alquilar','arrendar','renta'],
+        reply: 'Gestionamos alquileres de alto standing: selección de inquilinos, garantías jurídicas y reporting mensual. El yield medio en nuestro portfolio es del <strong>3,8% anual</strong>. ¿Quieres más información?',
+        quick: ['Quiero más info','Tengo una propiedad']
+      },
+      {
+        patterns: ['agente','asesor','humano','persona','llamar','teléfono','contactar','hablar'],
+        reply: 'Puedes hablar con un agente humano en <strong>+34 91 000 00 00</strong> (L–V 9:00–20:00) o dejar tus datos en el formulario y te llamamos nosotros. ¿Prefieres que te llamemos?',
+        quick: ['Sí, que me llamen','Ver formulario']
+      },
+      {
+        patterns: ['ver formulario','ir al formulario'],
+        reply: 'Perfecto, te llevo directamente al formulario.',
+        action: ()=>{ document.querySelector('#contacto').scrollIntoView({behavior:'smooth'}); }
+      },
+      {
+        patterns: ['que me llamen','sí, que me llamen','llamadme'],
+        reply: 'Genial. Deja tu nombre y teléfono en el <a href="#contacto" style="color:var(--color-warm-sand)">formulario de contacto</a> y un agente te llamará en horario de oficina.'
+      },
+      {
+        patterns: ['financiación','hipoteca','financiar','banco'],
+        reply: 'Colaboramos con varias entidades para ofrecer condiciones de financiación preferenciales. Para perfiles con más de 600.000 € en activos, tenemos acceso a banca privada. ¿Quieres que te informemos?'
+      },
+      {
+        patterns: ['gracias','perfecto','ok','genial','entendido'],
+        reply: '¡De nada! Estoy aquí para cualquier duda. Si quieres hablar con un agente, llámanos al <strong>+34 91 000 00 00</strong>.'
+      },
+      {
+        patterns: ['hola','buenas','buenos días','buenas tardes','hey'],
+        reply: '¡Hola! Soy el asistente virtual de Élite Homes. Puedo ayudarte con propiedades, zonas, precios o coordinar una cita con un agente. ¿Qué te interesa?',
+        quick: ['Ver propiedades','Quiero vender','Precios','Hablar con agente']
+      }
+    ];
+
+    const DEFAULT = '¿Puedes concretarme un poco más? Puedo ayudarte con propiedades disponibles, zonas, precios, valoraciones o hablar con un agente.';
+
+    const WELCOME = {
+      reply: 'Hola, soy el asistente de <strong>Élite Homes</strong>. Estoy aquí para ayudarte a encontrar tu próxima propiedad de alto standing en Madrid. ¿Por dónde empezamos?',
+      quick: ['Ver propiedades','Quiero vender','¿Qué zonas tenéis?','Hablar con agente']
+    };
+
+    function now(){
+      const d=new Date();
+      return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+    }
+
+    function appendMsg(role, html){
+      const wrap=document.createElement('div');
+      wrap.className='chat-msg '+role;
+      const bubble=document.createElement('div');
+      bubble.className='bubble';
+      bubble.innerHTML=html;
+      const time=document.createElement('div');
+      time.className='msg-time';
+      time.textContent=now();
+      wrap.appendChild(bubble);
+      wrap.appendChild(time);
+      messages.appendChild(wrap);
+      messages.scrollTop=messages.scrollHeight;
+      return wrap;
+    }
+
+    function setQuick(options){
+      quickWrap.innerHTML='';
+      (options||[]).forEach(label=>{
+        const b=document.createElement('button');
+        b.className='quick-btn';
+        b.textContent=label;
+        b.addEventListener('click',()=>handleInput(label));
+        quickWrap.appendChild(b);
+      });
+    }
+
+    function showTyping(){
+      typing.style.display='flex';
+      messages.scrollTop=messages.scrollHeight;
+    }
+    function hideTyping(){ typing.style.display='none'; }
+
+    function agentRespond(text, quick, action){
+      showTyping();
+      const delay = 600 + Math.min(text.replace(/<[^>]+>/g,'').length*14, 1400);
+      setTimeout(()=>{
+        hideTyping();
+        appendMsg('agent', text);
+        setQuick(quick||[]);
+        if(action) setTimeout(action,300);
+      }, delay);
+    }
+
+    function handleInput(text){
+      if(!text.trim()) return;
+      appendMsg('user', text);
+      setQuick([]);
+      input.value='';
+      const lower=text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      let matched=null;
+      for(const entry of KB){
+        if(entry.patterns.some(p=>lower.includes(p.normalize('NFD').replace(/[̀-ͯ]/g,'')))){
+          matched=entry;break;
+        }
+      }
+      if(matched){
+        agentRespond(matched.reply, matched.quick||[], matched.action||null);
+      } else {
+        agentRespond(DEFAULT,[]);
+      }
+    }
+
+    // open / close
+    function openChat(){
+      isOpen=true;
+      panel.classList.add('open');
+      panel.setAttribute('aria-hidden','false');
+      iconOpen.style.display='none';
+      iconClose.style.display='block';
+      badge.classList.remove('visible');
+      if(!started){
+        started=true;
+        agentRespond(WELCOME.reply, WELCOME.quick);
+      }
+      setTimeout(()=>input.focus(),250);
+    }
+    function closeChat(){
+      isOpen=false;
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden','true');
+      iconOpen.style.display='block';
+      iconClose.style.display='none';
+    }
+
+    trigger.addEventListener('click',()=>isOpen?closeChat():openChat());
+
+    // show badge after 4 s if not opened
+    setTimeout(()=>{ if(!started) badge.classList.add('visible'); }, 4000);
+
+    // form submit
+    window.chatSend=function(e){
+      e.preventDefault();
+      handleInput(input.value);
+    };
+  })();
+</script>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      const id=a.getAttribute('href');
+      if(id.length>1){
+        const el=document.querySelector(id);
+        if(el){e.preventDefault();el.scrollIntoView({behavior:'smooth',block:'start'});}
+      }
+    });
+  });
+
+  const metricNodes = document.querySelectorAll('.hero-metrics .num');
+  const targets = ['+340','12','98%'];
+  function animateNum(node, target){
+    const isPct = target.includes('%');
+    const isPlus = target.includes('+');
+    const raw = parseInt(target.replace(/[^0-9]/g,''),10);
+    let cur = 0;
+    const step = Math.max(1, Math.round(raw/40));
+    const t = setInterval(()=>{
+      cur += step;
+      if(cur>=raw){cur=raw;clearInterval(t);}
+      node.textContent = (isPlus?'+':'') + cur + (isPct?'%':'');
+    }, 22);
+  }
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){
+        metricNodes.forEach((n,i)=>animateNum(n,targets[i]));
+        obs.disconnect();
+      }
+    });
+  },{threshold:.4});
+  if(metricNodes.length) obs.observe(metricNodes[0]);
+
+  function handleLeadSubmit(){
+    const btn = document.querySelector('.form-submit');
+    const orig = btn.innerHTML;
+    btn.innerHTML = 'Enviado ✓';
+    btn.style.background = 'var(--color-champagne)';
+    setTimeout(()=>{
+      btn.innerHTML = orig;
+      btn.style.background = '';
+      document.getElementById('lead-form').reset();
+    }, 2400);
+  }
+</script>
+
+</body>
+</html>
