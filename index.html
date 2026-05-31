@@ -918,7 +918,7 @@
         <p>Solicita una valoración confidencial. Te respondemos en un plazo máximo de 48 horas.</p>
       </div>
 
-      <form class="lead-form" id="lead-form" onsubmit="event.preventDefault(); handleLeadSubmit();">
+      <form class="lead-form" id="lead-form">
         <div class="form-grid">
           <div class="field full">
             <label for="lead-name">Nombre completo</label>
@@ -1064,27 +1064,27 @@
     position:fixed;
     bottom:24px;right:24px;
     z-index:200;
-    display:flex;flex-direction:column;align-items:flex-end;gap:16px;
+    display:flex;flex-direction:column;align-items:flex-end;gap:12px;
   }
 
   /* Trigger button */
   .chat-trigger{
-    display:inline-flex;align-items:center;gap:10px;
+    display:inline-flex;align-items:center;justify-content:center;
+    width:52px;height:52px;
     background:var(--color-warm-sand);
     color:var(--color-obsidian);
     border:none;
     border-radius:2px;
-    padding:13px 20px;
-    font-family:'DM Sans',sans-serif;
-    font-weight:500;font-size:13px;letter-spacing:.04em;
     cursor:pointer;
     position:relative;
-    transition:background 200ms ease,color 200ms ease;
+    transition:background 200ms ease;
+    flex-shrink:0;
   }
   .chat-trigger:hover{background:var(--color-champagne);}
+  .chat-trigger-label{display:none;}
   .chat-trigger-badge{
-    position:absolute;top:-6px;right:-6px;
-    width:12px;height:12px;
+    position:absolute;top:-5px;right:-5px;
+    width:10px;height:10px;
     background:#E05A4A;
     border-radius:50%;
     border:2px solid var(--color-obsidian);
@@ -1264,7 +1264,6 @@
   @media(max-width:768px){
     .chat-widget{bottom:16px;right:16px;}
     .chat-panel{width:calc(100vw - 32px);}
-    .chat-trigger-label{display:none;}
   }
 </style>
 
@@ -1505,17 +1504,45 @@
   },{threshold:.4});
   if(metricNodes.length) obs.observe(metricNodes[0]);
 
-  function handleLeadSubmit(){
-    const btn = document.querySelector('.form-submit');
+  document.getElementById('lead-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const btn = this.querySelector('.form-submit');
     const orig = btn.innerHTML;
-    btn.innerHTML = 'Enviado ✓';
-    btn.style.background = 'var(--color-champagne)';
-    setTimeout(()=>{
+    btn.disabled = true;
+    btn.innerHTML = 'Enviando…';
+
+    const payload = {
+      nombre:    document.getElementById('lead-name').value.trim(),
+      telefono:  document.getElementById('lead-phone').value.trim(),
+      zona:      document.getElementById('lead-zone').value.trim(),
+      mensaje:   document.getElementById('lead-message').value.trim(),
+      timestamp: new Date().toISOString(),
+      fuente:    'elitehomesdexa.com'
+    };
+
+    try {
+      await fetch('https://dexaadvisory.com/api/elitehomes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      this.innerHTML = `
+        <div style="text-align:center;padding:2rem;color:var(--color-warm-sand);">
+          <p style="font-family:'Syne',sans-serif;font-size:1.1rem;margin-bottom:.5rem;">
+            Gracias, ${payload.nombre.split(' ')[0]}.
+          </p>
+          <p style="font-family:'DM Sans',sans-serif;font-weight:300;opacity:.7;font-size:.9rem;">
+            Te contactaremos en breve.
+          </p>
+        </div>`;
+    } catch(err) {
+      btn.disabled = false;
       btn.innerHTML = orig;
-      btn.style.background = '';
-      document.getElementById('lead-form').reset();
-    }, 2400);
-  }
+      alert('Error al enviar. Inténtalo de nuevo.');
+    }
+  });
 </script>
 
 </body>
