@@ -18,6 +18,18 @@ export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS });
 }
 
+export async function onRequestGet({ env }) {
+  return new Response(JSON.stringify({
+    ok: true,
+    envs: {
+      NOTION_API_KEY:  !!env.NOTION_API_KEY,
+      OPENAI_API_KEY:  !!env.OPENAI_API_KEY,
+      RESEND_API_KEY:  !!env.RESEND_API_KEY,
+    },
+    notion_db: NOTION_DATABASE_ID,
+  }), { headers: { 'Content-Type': 'application/json', ...CORS } });
+}
+
 export async function onRequestPost({ request, env, waitUntil }) {
   let body;
   try { body = await request.json(); }
