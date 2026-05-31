@@ -56,10 +56,11 @@ export async function onRequestPost({ request, env, waitUntil }) {
     fuente:   body.fuente    || 'elitehomesdexa.com',
   };
 
-  waitUntil(runPipeline(payload, env));
+  // DEBUG MODE: run pipeline synchronously and return results
+  const debugResult = await runPipelineDebug(payload, env);
 
   return new Response(
-    JSON.stringify({ ok: true }),
+    JSON.stringify({ ok: true, debug: debugResult }),
     { headers: { 'Content-Type': 'application/json', ...CORS } }
   );
 }
@@ -70,6 +71,61 @@ async function runPipeline(payload, env) {
     writeToNotion(payload, analysis, env),
     sendBriefingEmail(payload, analysis, env),
   ]);
+}
+
+async function runPipelineDebug(payload, env) {
+  const result = {
+    envs: {
+      NOTION_API_KEY:  !!env.NOTION_API_KEY,
+      OPENAI_API_KEY:  !!env.OPENAI_API_KEY,
+      RESEND_API_KEY:  !!env.RESEND_API_KEY,
+    },
+    notion: null,
+    openai: null,
+    email:  null,
+  };
+
+  // OpenAI
+  try {
+    const analysis = await analyzeLeadIA(payload, env);
+    result.openai = analysis ?? 'no_key';
+    // Notion
+    try {
+      const notionRes = await writeToNotionDebug(payload, analysis ?? {}, env);
+      result.notion = notionRes;
+    } catch (e) { result.notion = { error: e.message }; }
+    // Email
+    try {
+      await sendBriefingEmail(payload, analysis ?? {}, env);
+      result.email = 'sent';
+    } catch (e) { result.email = { error: e.message }; }
+  } catch (e) { result.openai = { error: e.message }; }
+
+  return result;
+}
+
+async function writeToNotionDebug(payload, analysis, env) {
+  if (!env.NOTION_API_KEY) return 'no_key';
+  const props = {
+    'Nombre':   { title:        [{ text: { content: payload.nombre } }] },
+    'Teléfono': { phone_number: payload.telefono },
+    'Mensaje':  { rich_text:    [{ text: { content: payload.mensaje || '' } }] },
+    'Fuente':   { rich_text:    [{ text: { content: payload.fuente } }] },
+    'Fecha':    { date:         { start: payload.fecha } },
+    'Estado':   { select:       { name: 'Nuevo' } },
+  };
+  if (analysis?.zona_normalizada || payload.zona) props['Zona'] = { select: { name: analysis?.zona_normalizada || 'Otras zonas' } };
+  if (analysis?.score) props['Score IA'] = { select: { name: analysis.score } };
+  if (analysis?.resumen) {
+    props['Análisis IA'] = { rich_text: [{ text: { content: [analysis.resumen, analysis.tipo_operacion && `Operación: ${analysis.tipo_operacion}`, analysis.urgencia && `Urgencia: ${analysis.urgencia}`].filter(Boolean).join(' | ') } }] };
+  }
+  const res = await fetch('https://api.notion.com/v1/pages', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${env.NOTION_API_KEY}`, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ parent: { database_id: NOTION_DATABASE_ID }, properties: props }),
+  });
+  const data = await res.json();
+  return { status: res.status, ok: res.ok, id: data.id, error: data.message };
 }
 
 async function analyzeLeadIA(payload, env) {
