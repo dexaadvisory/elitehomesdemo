@@ -3,7 +3,7 @@
  * Captura, cualificación IA y almacenamiento de leads
  *
  * Variables de entorno (Cloudflare Pages → Settings → Environment Variables):
- *   ANTHROPIC_API_KEY  — Claude AI (cualificación)
+ *   OPENAI_API_KEY     — GPT-4o (cualificación IA)
  *   SUPABASE_URL       — URL del proyecto Supabase
  *   SUPABASE_ANON_KEY  — Clave anon de Supabase
  *   RESEND_API_KEY     — Email de notificación (opcional)
@@ -64,7 +64,7 @@ export async function onRequestPost({ request, env }) {
 // ─── Claude: cualificación de lead ────────────────────────────────────────────
 
 async function analyzeWithClaude(payload, env) {
-  if (!env.ANTHROPIC_API_KEY) return defaultAnalysis();
+  if (!env.OPENAI_API_KEY) return defaultAnalysis();
 
   const systemPrompt = `Eres el sistema de cualificación de leads de una agencia inmobiliaria española.
 Tu función es analizar el lead y devolver ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
@@ -94,26 +94,27 @@ Teléfono: ${payload.telefono ? 'Sí' : 'No'}
 Email: ${payload.email ? 'Sí' : 'No'}`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
+        'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'gpt-4o',
         max_tokens: 500,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMsg }],
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user',   content: userMsg },
+        ],
       }),
     });
 
     if (!res.ok) return defaultAnalysis();
     const data = await res.json();
-    const text = data.content?.[0]?.text || '{}';
-    const parsed = JSON.parse(text);
-    return parsed;
+    const text = data.choices?.[0]?.message?.content || '{}';
+    return JSON.parse(text);
   } catch {
     return defaultAnalysis();
   }
