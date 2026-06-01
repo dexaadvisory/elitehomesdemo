@@ -635,6 +635,123 @@
     .footer-cols{grid-template-columns:1fr 1fr;gap:24px;}
     .demo-pill{bottom:16px;left:16px;font-size:10px;}
   }
+
+  /* ============== RESULTS PANEL ============== */
+  .lead-results{
+    background:var(--color-obsidian);
+    border:1px solid var(--color-carbon);
+    border-radius:2px;
+    margin-top:20px;
+    overflow:hidden;
+    animation:slideDown .3s ease;
+  }
+  @keyframes slideDown{
+    from{opacity:0;transform:translateY(-6px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .results-header{
+    background:var(--color-carbon);
+    padding:10px 18px;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--color-steel);
+  }
+  .results-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--color-warm-sand);
+  }
+  .results-time{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:.08em;
+    color:var(--color-ash);
+  }
+  .results-body{
+    padding:18px;
+    display:flex;gap:18px;align-items:flex-start;
+  }
+  .results-score-col{
+    flex-shrink:0;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+  }
+  .score-ring-wrap{
+    position:relative;width:80px;height:80px;
+  }
+  .score-ring-wrap svg{
+    width:100%;height:100%;
+    transform:rotate(-90deg);
+  }
+  .score-bg-circle{fill:none;stroke:var(--color-carbon);stroke-width:7;}
+  .score-arc-circle{
+    fill:none;stroke:var(--color-warm-sand);stroke-width:7;stroke-linecap:round;
+    transition:stroke-dashoffset .9s cubic-bezier(.4,0,.2,1), stroke .4s ease;
+  }
+  .score-num-val{
+    position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-58%);
+    font-family:'Syne',sans-serif;font-weight:700;font-size:22px;
+    color:var(--color-ivory);line-height:1;
+  }
+  .score-num-den{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    font-family:'JetBrains Mono',monospace;font-size:9px;
+    color:var(--color-ash);white-space:nowrap;
+  }
+  .results-status-badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+    padding:4px 8px;border-radius:2px;white-space:nowrap;text-align:center;
+  }
+  .badge-ok{background:rgba(74,222,128,.08);border:1px solid #4ade80;color:#4ade80;}
+  .badge-nurturing{background:rgba(251,191,36,.08);border:1px solid #fbbf24;color:#fbbf24;}
+  .results-analysis{flex:1;display:flex;flex-direction:column;gap:10px;}
+  .r-block{
+    background:var(--color-onyx);
+    border:1px solid var(--color-carbon);
+    border-radius:2px;
+    padding:11px 13px;
+  }
+  .r-block-hot{border-color:var(--color-warm-sand);}
+  .r-block-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--color-warm-sand);margin-bottom:5px;
+  }
+  .r-block-text{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:12.5px;line-height:1.55;color:var(--color-ivory);
+  }
+  .r-meta{display:flex;flex-wrap:wrap;gap:5px;}
+  .r-pill{
+    font-family:'JetBrains Mono',monospace;font-size:9px;
+    letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 7px;border-radius:2px;
+    background:var(--color-carbon);border:1px solid var(--color-steel);
+    color:var(--color-mist);
+  }
+  .wa-section{
+    border-top:1px solid var(--color-carbon);
+    padding:14px 18px;
+  }
+  .wa-section-label{
+    font-family:'JetBrains Mono',monospace;font-size:9px;
+    letter-spacing:.18em;text-transform:uppercase;
+    color:var(--color-ash);margin-bottom:10px;
+  }
+  .wa-bubble{
+    background:#1a2e1a;
+    border:1px solid #2a4a2a;
+    border-radius:2px;
+    padding:13px 16px;
+    max-width:380px;
+  }
+  .wa-bubble-msg{
+    font-family:'DM Sans',sans-serif;font-weight:300;
+    font-size:12.5px;line-height:1.6;color:#dff0df;white-space:pre-wrap;
+  }
+  .wa-bubble-foot{
+    font-family:'JetBrains Mono',monospace;font-size:9px;
+    color:#4a8a4a;margin-top:5px;text-align:right;
+  }
 </style>
 </head>
 <body>
@@ -951,6 +1068,46 @@
           Este formulario está conectado al sistema de leads de DEXA Advisory
         </div>
       </form>
+
+      <!-- ── Panel de resultados IA ── -->
+      <div class="lead-results" id="lead-results" style="display:none;">
+        <div class="results-header">
+          <span class="results-tag">DEXA Advisory · Análisis en tiempo real</span>
+          <span class="results-time" id="results-time"></span>
+        </div>
+        <div class="results-body">
+          <div class="results-score-col">
+            <div class="score-ring-wrap">
+              <svg viewBox="0 0 80 80">
+                <circle class="score-bg-circle" cx="40" cy="40" r="32"/>
+                <circle class="score-arc-circle" id="score-arc" cx="40" cy="40" r="32"
+                  stroke-dasharray="201.1" stroke-dashoffset="201.1"/>
+              </svg>
+              <div class="score-num-val" id="score-val">—</div>
+              <div class="score-num-den">/10</div>
+            </div>
+            <div class="results-status-badge" id="results-badge"></div>
+          </div>
+          <div class="results-analysis">
+            <div class="r-block">
+              <div class="r-block-label">Análisis IA</div>
+              <div class="r-block-text" id="r-razon"></div>
+            </div>
+            <div class="r-block r-block-hot">
+              <div class="r-block-label">⚡ Siguiente paso</div>
+              <div class="r-block-text" id="r-siguiente"></div>
+            </div>
+            <div class="r-meta" id="r-meta"></div>
+          </div>
+        </div>
+        <div class="wa-section">
+          <div class="wa-section-label">📱 Mensaje WhatsApp · Élite Homes</div>
+          <div class="wa-bubble">
+            <div class="wa-bubble-msg" id="wa-msg"></div>
+            <div class="wa-bubble-foot">ahora ✓✓</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1507,42 +1664,91 @@
   document.getElementById('lead-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    const btn = this.querySelector('.form-submit');
-    const orig = btn.innerHTML;
+    const btn   = this.querySelector('.form-submit');
+    const orig  = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = 'Enviando…';
+    btn.innerHTML = '<span style="opacity:.65">Analizando lead…</span>';
+
+    const nombre   = document.getElementById('lead-name').value.trim();
+    const telefono = document.getElementById('lead-phone').value.trim();
+    const zona     = document.getElementById('lead-zone').value.trim();
+    const mensaje  = document.getElementById('lead-message').value.trim();
 
     const payload = {
-      nombre:    document.getElementById('lead-name').value.trim(),
-      telefono:  document.getElementById('lead-phone').value.trim(),
-      zona:      document.getElementById('lead-zone').value.trim(),
-      mensaje:   document.getElementById('lead-message').value.trim(),
+      nombre, telefono, zona, mensaje,
       timestamp: new Date().toISOString(),
-      fuente:    'elitehomesdexa.com'
+      fuente:    'elitehomesdemo.com',
     };
 
     try {
-      await fetch('https://elitehomesdemo.pages.dev/api/elitehomes', {
+      const res  = await fetch('/api/elitehomes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
+      const data = await res.json();
 
-      this.innerHTML = `
-        <div style="text-align:center;padding:2rem;color:var(--color-warm-sand);">
-          <p style="font-family:'Syne',sans-serif;font-size:1.1rem;margin-bottom:.5rem;">
-            Gracias, ${payload.nombre.split(' ')[0]}.
-          </p>
-          <p style="font-family:'DM Sans',sans-serif;font-weight:300;opacity:.7;font-size:.9rem;">
-            Te contactaremos en breve.
-          </p>
-        </div>`;
+      renderResults(nombre, zona, data.analysis || {});
+
+      btn.disabled  = false;
+      btn.innerHTML = '<span style="opacity:.7">✓ Lead enviado</span>';
+
     } catch(err) {
-      btn.disabled = false;
+      btn.disabled  = false;
       btn.innerHTML = orig;
       alert('Error al enviar. Inténtalo de nuevo.');
     }
   });
+
+  function renderResults(nombre, zona, a) {
+    const panel = document.getElementById('lead-results');
+    panel.style.display = 'block';
+
+    // Hora
+    document.getElementById('results-time').textContent =
+      new Date().toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+    // Score ring
+    const score = a.score ?? 0;
+    document.getElementById('score-val').textContent = score;
+    const arc = document.getElementById('score-arc');
+    const offset = 201.1 * (1 - score / 10);
+    const color  = score >= 7 ? '#4ade80' : score >= 4 ? '#fbbf24' : '#f87171';
+    setTimeout(() => {
+      arc.style.strokeDashoffset = offset;
+      arc.style.stroke = color;
+    }, 50);
+
+    // Badge
+    const badge = document.getElementById('results-badge');
+    if (a.cualificado) {
+      badge.className = 'results-status-badge badge-ok';
+      badge.textContent = '✓ Cualificado';
+    } else {
+      badge.className = 'results-status-badge badge-nurturing';
+      badge.textContent = '○ Nurturing';
+    }
+
+    // Análisis
+    document.getElementById('r-razon').textContent    = a.razon         || '—';
+    document.getElementById('r-siguiente').textContent = a.siguiente_paso || '—';
+
+    // Pills
+    const pills = [a.tipo_operacion, a.urgencia,
+      a.presupuesto_viable != null ? (a.presupuesto_viable ? 'Presupuesto viable' : 'Presupuesto a revisar') : null
+    ].filter(Boolean);
+    document.getElementById('r-meta').innerHTML =
+      pills.map(p => `<span class="r-pill">${p}</span>`).join('');
+
+    // WhatsApp preview
+    const fn = nombre.split(' ')[0];
+    const z  = zona || a.zona || 'Madrid';
+    document.getElementById('wa-msg').textContent = a.cualificado
+      ? `Hola ${fn} 👋\n\nGracias por tu interés en propiedades en ${z}.\n\nHe revisado tu consulta y me gustaría hablar contigo esta semana. Tenemos opciones que encajan exactamente con lo que buscas.\n\n¿Tienes 20 minutos para una llamada?\n\nUn saludo,\nEquipo Élite Homes`
+      : `Hola ${fn} 👋\n\nGracias por contactar con Élite Homes. Hemos recibido tu consulta sobre propiedades en ${z}.\n\nEstamos aquí cuando estés listo para avanzar. Sin prisa.\n\nUn saludo,\nEquipo Élite Homes`;
+
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 </script>
 
 </body>

@@ -1,36 +1,25 @@
 /**
- * Cloudflare Pages Function — Captura de leads Élite Homes
- * Archivo: /functions/api/elitehomes.js
+ * Cloudflare Pages Function — Élite Homes · DEXA Advisory
+ * Captura, cualificación IA y almacenamiento de leads
  *
  * Variables de entorno (Cloudflare Pages → Settings → Environment Variables):
- *   NOTION_API_KEY · OPENAI_API_KEY · RESEND_API_KEY
+ *   ANTHROPIC_API_KEY  — Claude AI (cualificación)
+ *   SUPABASE_URL       — URL del proyecto Supabase
+ *   SUPABASE_ANON_KEY  — Clave anon de Supabase
+ *   RESEND_API_KEY     — Email de notificación (opcional)
  */
 
-const NOTION_DATABASE_ID = '5d3c4f5eaf6f4f2b9c52367384116ca4';
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
-const ZONA_OPCIONES = ['Madrid Centro', 'Salamanca', 'Chamberí', 'Retiro', 'Chamartín', 'Otras zonas'];
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS });
 }
 
-export async function onRequestGet({ env }) {
-  return new Response(JSON.stringify({
-    ok: true,
-    envs: {
-      NOTION_API_KEY:  !!env.NOTION_API_KEY,
-      OPENAI_API_KEY:  !!env.OPENAI_API_KEY,
-      RESEND_API_KEY:  !!env.RESEND_API_KEY,
-    },
-    notion_db: NOTION_DATABASE_ID,
-  }), { headers: { 'Content-Type': 'application/json', ...CORS } });
-}
-
-export async function onRequestPost({ request, env, waitUntil }) {
+export async function onRequestPost({ request, env }) {
   let body;
   try { body = await request.json(); }
   catch {
@@ -50,257 +39,209 @@ export async function onRequestPost({ request, env, waitUntil }) {
   const payload = {
     nombre:   body.nombre.trim(),
     telefono: body.telefono.trim(),
-    zona:     (body.zona    || '').trim(),
-    mensaje:  (body.mensaje || '').trim(),
+    email:    (body.email    || '').trim(),
+    zona:     (body.zona     || '').trim(),
+    mensaje:  (body.mensaje  || '').trim(),
     fecha:    body.timestamp || new Date().toISOString(),
-    fuente:   body.fuente    || 'elitehomesdexa.com',
+    fuente:   body.fuente    || 'elitehomesdemo.com',
   };
 
-  // DEBUG MODE: run pipeline synchronously and return results
-  const debugResult = await runPipelineDebug(payload, env);
+  // 1. Análisis IA con Claude
+  const analysis = await analyzeWithClaude(payload, env);
+
+  // 2. Guardar en Supabase + enviar email (en paralelo, sin bloquear respuesta)
+  await Promise.allSettled([
+    saveToSupabase(payload, analysis, env),
+    sendEmail(payload, analysis, env),
+  ]);
 
   return new Response(
-    JSON.stringify({ ok: true, debug: debugResult }),
+    JSON.stringify({ ok: true, analysis: { ...analysis, zona: payload.zona } }),
     { headers: { 'Content-Type': 'application/json', ...CORS } }
   );
 }
 
-async function runPipeline(payload, env) {
-  const analysis = await analyzeLeadIA(payload, env) ?? {};
-  await Promise.allSettled([
-    writeToNotion(payload, analysis, env),
-    sendBriefingEmail(payload, analysis, env),
-  ]);
-}
+// ─── Claude: cualificación de lead ────────────────────────────────────────────
 
-async function runPipelineDebug(payload, env) {
-  const result = {
-    envs: {
-      NOTION_API_KEY:  !!env.NOTION_API_KEY,
-      OPENAI_API_KEY:  !!env.OPENAI_API_KEY,
-      RESEND_API_KEY:  !!env.RESEND_API_KEY,
-    },
-    notion: null,
-    openai: null,
-    email:  null,
-  };
+async function analyzeWithClaude(payload, env) {
+  if (!env.ANTHROPIC_API_KEY) return defaultAnalysis();
 
-  // OpenAI
+  const systemPrompt = `Eres el sistema de cualificación de leads de una agencia inmobiliaria española.
+Tu función es analizar el lead y devolver ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
+
+CRITERIOS DE PUNTUACIÓN (suma de 1 a 10):
++3  Presupuesto concreto mencionado o hipoteca aprobada confirmada
++2  Urgencia clara: fecha límite, mudanza inminente, compra decidida
++2  Mensaje específico sobre el inmueble (zona, m², precio, características)
++1  Teléfono proporcionado
++1  Email proporcionado
+-3  Señales de baja intención: "solo mirando", "sin presupuesto", "curiosidad"
+-1  Mensaje completamente genérico sin referencia al inmueble
+
+REGLA: un lead está CUALIFICADO si score >= 6.
+
+FORMATO DE RESPUESTA — exactamente este JSON, nada más:
+{"cualificado":true,"score":8,"razon":"Lead con hipoteca aprobada, fecha límite clara y mensaje específico","tipo_operacion":"compra","urgencia":"1-3_meses","presupuesto_viable":true,"siguiente_paso":"Llamar hoy antes de las 14h. Alta probabilidad de cierre."}
+
+Valores tipo_operacion: "compra" | "alquiler" | "inversion" | "desconocido"
+Valores urgencia: "inmediata" | "1-3_meses" | "6+_meses" | "explorando"`;
+
+  const userMsg = `LEAD A CUALIFICAR:
+Nombre: ${payload.nombre}
+Mensaje: ${payload.mensaje || 'Sin mensaje'}
+Zona de interés: ${payload.zona || 'No especificada'}
+Teléfono: ${payload.telefono ? 'Sí' : 'No'}
+Email: ${payload.email ? 'Sí' : 'No'}`;
+
   try {
-    const analysis = await analyzeLeadIA(payload, env);
-    result.openai = analysis ?? 'no_key';
-    // Notion
-    try {
-      const notionRes = await writeToNotionDebug(payload, analysis ?? {}, env);
-      result.notion = notionRes;
-    } catch (e) { result.notion = { error: e.message }; }
-    // Email
-    try {
-      await sendBriefingEmail(payload, analysis ?? {}, env);
-      result.email = 'sent';
-    } catch (e) { result.email = { error: e.message }; }
-  } catch (e) { result.openai = { error: e.message }; }
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMsg }],
+      }),
+    });
 
-  return result;
-}
-
-async function writeToNotionDebug(payload, analysis, env) {
-  if (!env.NOTION_API_KEY) return 'no_key';
-  const props = {
-    'Nombre':   { title:        [{ text: { content: payload.nombre } }] },
-    'Teléfono': { phone_number: payload.telefono },
-    'Mensaje':  { rich_text:    [{ text: { content: payload.mensaje || '' } }] },
-    'Fuente':   { rich_text:    [{ text: { content: payload.fuente } }] },
-    'Fecha':    { date:         { start: payload.fecha } },
-    'Estado':   { select:       { name: 'Nuevo' } },
-  };
-  if (analysis?.zona_normalizada || payload.zona) props['Zona'] = { select: { name: analysis?.zona_normalizada || 'Otras zonas' } };
-  if (analysis?.score) props['Score IA'] = { select: { name: analysis.score } };
-  if (analysis?.resumen) {
-    props['Análisis IA'] = { rich_text: [{ text: { content: [analysis.resumen, analysis.tipo_operacion && `Operación: ${analysis.tipo_operacion}`, analysis.urgencia && `Urgencia: ${analysis.urgencia}`].filter(Boolean).join(' | ') } }] };
-  }
-  const res = await fetch('https://api.notion.com/v1/pages', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${env.NOTION_API_KEY}`, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ parent: { database_id: NOTION_DATABASE_ID }, properties: props }),
-  });
-  const data = await res.json();
-  return { status: res.status, ok: res.ok, id: data.id, error: data.message };
-}
-
-async function analyzeLeadIA(payload, env) {
-  if (!env.OPENAI_API_KEY) return null;
-
-  const prompt = `Eres analista de ventas de Élite Homes, agencia inmobiliaria de alto standing en Madrid.
-
-Prospecto:
-- Nombre: ${payload.nombre}
-- Teléfono: ${payload.telefono}
-- Zona: ${payload.zona || 'No especificada'}
-- Mensaje: ${payload.mensaje || 'Sin mensaje'}
-
-Responde SOLO con JSON válido sin markdown:
-{"score":"Alta"|"Media"|"Baja","zona_normalizada":"Madrid Centro"|"Salamanca"|"Chamberí"|"Retiro"|"Chamartín"|"Otras zonas","tipo_operacion":"Compra"|"Alquiler"|"No especificado","urgencia":"Alta"|"Media"|"Baja","resumen":"2-3 frases ejecutivas sobre el lead y el próximo paso recomendado."}
-
-Score: Alta=zona premium+intención clara de compra. Media=zona semi-premium o intención difusa. Baja=genérico o zona periférica.`;
-
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      max_tokens: 400,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-
-  if (!res.ok) return null;
-  const data = await res.json();
-  try {
-    const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}');
-    if (!ZONA_OPCIONES.includes(parsed.zona_normalizada)) parsed.zona_normalizada = 'Otras zonas';
+    if (!res.ok) return defaultAnalysis();
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '{}';
+    const parsed = JSON.parse(text);
     return parsed;
-  } catch { return null; }
+  } catch {
+    return defaultAnalysis();
+  }
 }
 
-async function writeToNotion(payload, analysis, env) {
-  if (!env.NOTION_API_KEY) return;
-
-  const props = {
-    'Nombre':   { title:        [{ text: { content: payload.nombre } }] },
-    'Teléfono': { phone_number: payload.telefono },
-    'Mensaje':  { rich_text:    [{ text: { content: payload.mensaje || '' } }] },
-    'Fuente':   { rich_text:    [{ text: { content: payload.fuente } }] },
-    'Fecha':    { date:         { start: payload.fecha } },
-    'Estado':   { select:       { name: 'Nuevo' } },
+function defaultAnalysis() {
+  return {
+    cualificado: false,
+    score: 3,
+    razon: 'No se pudo analizar el lead automáticamente.',
+    tipo_operacion: 'desconocido',
+    urgencia: 'explorando',
+    presupuesto_viable: false,
+    siguiente_paso: 'Revisar manualmente y contactar en 24h.',
   };
-
-  if (analysis?.zona_normalizada || payload.zona) {
-    props['Zona'] = { select: { name: analysis?.zona_normalizada || 'Otras zonas' } };
-  }
-  if (analysis?.score) {
-    props['Score IA'] = { select: { name: analysis.score } };
-  }
-  if (analysis?.resumen) {
-    props['Análisis IA'] = {
-      rich_text: [{ text: { content: [
-        analysis.resumen,
-        analysis.tipo_operacion && `Operación: ${analysis.tipo_operacion}`,
-        analysis.urgencia && `Urgencia: ${analysis.urgencia}`,
-      ].filter(Boolean).join(' | ') } }],
-    };
-  }
-
-  await fetch('https://api.notion.com/v1/pages', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${env.NOTION_API_KEY}`,
-      'Notion-Version': '2022-06-28',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ parent: { database_id: NOTION_DATABASE_ID }, properties: props }),
-  });
 }
 
-async function sendBriefingEmail(payload, analysis, env) {
+// ─── Supabase: guardar lead ────────────────────────────────────────────────────
+
+async function saveToSupabase(payload, analysis, env) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return;
+
+  try {
+    await fetch(`${env.SUPABASE_URL}/rest/v1/leads`, {
+      method: 'POST',
+      headers: {
+        'apikey': env.SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        nombre:           payload.nombre,
+        telefono:         payload.telefono,
+        email:            payload.email || null,
+        mensaje_original: payload.mensaje,
+        portal_origen:    payload.fuente,
+        inmueble_zona:    payload.zona,
+        estado:           analysis?.cualificado ? 'cualificado' : 'nurturing',
+        score_ia:         analysis?.score,
+        razon_ia:         analysis?.razon,
+        tipo_operacion:   analysis?.tipo_operacion || 'desconocido',
+        urgencia:         analysis?.urgencia || 'explorando',
+        presupuesto_viable: analysis?.presupuesto_viable,
+        siguiente_paso_ia:  analysis?.siguiente_paso,
+        agencia_nombre:   'Élite Homes',
+        agencia_agente:   'Sistema DEXA',
+        modo:             'demo',
+        nurturing_day:    0,
+      }),
+    });
+  } catch { /* silencioso */ }
+}
+
+// ─── Resend: email de notificación ────────────────────────────────────────────
+
+async function sendEmail(payload, analysis, env) {
   if (!env.RESEND_API_KEY) return;
 
-  const scoreColor = { Alta: '#2d8a4e', Media: '#b07d11', Baja: '#c0392b' }[analysis?.score] || '#666';
-  const scoreBg    = { Alta: '#eafaf1', Media: '#fefce8', Baja: '#fdf2f2' }[analysis?.score]  || '#f5f5f5';
-  const fecha = new Date(payload.fecha).toLocaleString('es-ES', {
-    timeZone: 'Europe/Madrid',
-    dateStyle: 'full',
-    timeStyle: 'short',
-  });
+  const scoreColor = analysis?.cualificado ? '#4ade80' : '#fbbf24';
+  const scoreLabel = analysis?.cualificado ? '✓ CUALIFICADO' : '○ EN NURTURING';
 
-  await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: 'DEXA Advisory <onboarding@resend.dev>',
-      to:   ['dexaadvisory@gmail.com'],
-      subject: `[Élite Homes] Nuevo lead${analysis?.score ? ' — Score ' + analysis.score : ''}: ${payload.nombre}`,
-      html: buildEmailHtml(payload, analysis, scoreColor, scoreBg, fecha),
-    }),
-  });
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from:    'Élite Homes · DEXA <onboarding@resend.dev>',
+        to:      ['dexaadvisory@gmail.com'],
+        subject: `[DEMO] Lead ${scoreLabel} — ${payload.nombre} · Score ${analysis?.score ?? 0}/10`,
+        html:    buildEmailHtml(payload, analysis, scoreColor, scoreLabel),
+      }),
+    });
+  } catch { /* silencioso */ }
 }
 
-function buildEmailHtml(payload, analysis, scoreColor, scoreBg, fecha) {
-  const scoreBadge = analysis?.score ? `
-    <tr><td style="padding:20px 32px 0;">
-      <div style="background:${scoreBg};border:1px solid ${scoreColor};padding:12px 20px;border-radius:4px;">
-        <span style="font-size:13px;font-weight:700;color:${scoreColor};">Score IA: ${analysis.score}</span>
-        ${analysis.tipo_operacion ? `<span style="font-size:12px;color:#666;margin-left:12px;">· ${e(analysis.tipo_operacion)}</span>` : ''}
-        ${analysis.urgencia ? `<span style="font-size:12px;color:#666;margin-left:8px;">· Urgencia ${e(analysis.urgencia)}</span>` : ''}
-      </div>
-    </td></tr>` : '';
-
-  const analisisRow = analysis?.resumen ? `
-    <tr><td style="padding:0 32px 28px;">
-      <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.05em;">Análisis IA</p>
-      <p style="margin:0;font-size:14px;color:#333;line-height:1.75;">${e(analysis.resumen)}</p>
-    </td></tr>` : '';
-
+function buildEmailHtml(payload, analysis, scoreColor, scoreLabel) {
   return `<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#f0f0f0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f0f0f0">
+<body style="margin:0;padding:0;background:#0f0f0f;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0f0f0f">
   <tr><td align="center" style="padding:32px 20px;">
-    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:600px;">
-      <tr><td style="background:#1a1a1a;padding:14px 32px;">
-        <span style="font-family:monospace;font-size:11px;letter-spacing:.2em;color:#c4a882;text-transform:uppercase;">Élite Homes · Lead Alert</span>
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#1a1a1a;max-width:560px;">
+      <tr><td style="background:#0f0f0f;padding:16px 28px;border-bottom:1px solid #2e2e2e;">
+        <span style="font-family:monospace;font-size:10px;letter-spacing:.2em;color:#c4a882;text-transform:uppercase;">Élite Homes · DEXA Advisory · Lead Alert</span>
       </td></tr>
-      ${scoreBadge}
-      <tr><td style="padding:24px 32px 8px;">
-        <table cellpadding="0" cellspacing="0" width="100%">
+      <tr><td style="padding:24px 28px 0;">
+        <div style="display:inline-block;padding:8px 14px;border:1px solid ${scoreColor};margin-bottom:20px;">
+          <span style="font-family:monospace;font-size:11px;letter-spacing:.15em;color:${scoreColor};">${scoreLabel} · ${analysis?.score ?? 0}/10</span>
+        </div>
+        <table cellpadding="0" cellspacing="0" width="100%" style="border-top:1px solid #2e2e2e;padding-top:16px;">
           <tr>
-            <td style="padding:6px 0;width:90px;font-size:13px;font-weight:600;color:#666;">Nombre</td>
-            <td style="padding:6px 0;font-size:13px;color:#111;">${e(payload.nombre)}</td>
+            <td style="padding:6px 0;width:80px;font-size:11px;color:#6b6b6b;font-family:monospace;letter-spacing:.1em;text-transform:uppercase;">Nombre</td>
+            <td style="padding:6px 0;font-size:13px;color:#f5f0e8;">${esc(payload.nombre)}</td>
           </tr>
           <tr>
-            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#666;">Teléfono</td>
-            <td style="padding:6px 0;font-size:13px;color:#111;">
-              <a href="tel:${e(payload.telefono)}" style="color:#a0856a;text-decoration:none;">${e(payload.telefono)}</a>
-            </td>
+            <td style="padding:6px 0;font-size:11px;color:#6b6b6b;font-family:monospace;letter-spacing:.1em;text-transform:uppercase;">Teléfono</td>
+            <td style="padding:6px 0;font-size:13px;color:#c4a882;">${esc(payload.telefono)}</td>
           </tr>
           <tr>
-            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#666;">Zona</td>
-            <td style="padding:6px 0;font-size:13px;color:#111;">
-              ${e(payload.zona || '—')}
-              ${analysis?.zona_normalizada ? `<span style="color:#999;font-size:12px;">(→ ${e(analysis.zona_normalizada)})</span>` : ''}
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:6px 0;font-size:13px;font-weight:600;color:#666;">Recibido</td>
-            <td style="padding:6px 0;font-size:13px;color:#111;">${e(fecha)}</td>
+            <td style="padding:6px 0;font-size:11px;color:#6b6b6b;font-family:monospace;letter-spacing:.1em;text-transform:uppercase;">Zona</td>
+            <td style="padding:6px 0;font-size:13px;color:#f5f0e8;">${esc(payload.zona || '—')}</td>
           </tr>
         </table>
       </td></tr>
-      <tr><td style="padding:0 32px 20px;">
-        <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#666;">Mensaje</p>
-        <div style="background:#fafafa;border-left:3px solid #a0856a;padding:14px 18px;">
-          <p style="margin:0;font-size:14px;color:#444;line-height:1.75;font-style:italic;">"${e(payload.mensaje || '—')}"</p>
+      <tr><td style="padding:16px 28px;">
+        <div style="background:#0f0f0f;border-left:2px solid #c4a882;padding:12px 16px;margin-bottom:20px;">
+          <p style="margin:0;font-size:13px;color:#9e9e8f;line-height:1.65;font-style:italic;">"${esc(payload.mensaje || '—')}"</p>
         </div>
+        <p style="margin:0 0 6px;font-size:10px;color:#6b6b6b;font-family:monospace;letter-spacing:.15em;text-transform:uppercase;">Análisis IA</p>
+        <p style="margin:0 0 20px;font-size:13px;color:#f5f0e8;line-height:1.6;">${esc(analysis?.razon || '—')}</p>
+        <p style="margin:0 0 6px;font-size:10px;color:#c4a882;font-family:monospace;letter-spacing:.15em;text-transform:uppercase;">⚡ Siguiente paso</p>
+        <p style="margin:0;font-size:13px;color:#f5f0e8;line-height:1.6;">${esc(analysis?.siguiente_paso || '—')}</p>
       </td></tr>
-      ${analisisRow}
-      <tr><td style="padding:14px 32px;background:#f8f8f8;border-top:1px solid #eee;">
-        <p style="margin:0;font-family:monospace;font-size:11px;color:#aaa;">Élite Homes Demo · DEXA Advisory</p>
+      <tr><td style="padding:14px 28px;border-top:1px solid #2e2e2e;">
+        <p style="margin:0;font-family:monospace;font-size:10px;color:#4a4a4a;letter-spacing:.1em;">DEXA Advisory · Sistema Automático de Cualificación · Modo Demo</p>
       </td></tr>
     </table>
   </td></tr>
 </table>
-</body>
-</html>`;
+</body></html>`;
 }
 
-function e(s) {
+function esc(s) {
   return s == null ? '' : String(s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
   );
