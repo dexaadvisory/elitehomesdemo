@@ -1688,10 +1688,20 @@
       });
       const data = await res.json();
 
-      renderResults(nombre, zona, data.analysis || {});
-
-      btn.disabled  = false;
-      btn.innerHTML = '<span style="opacity:.7">✓ Lead enviado</span>';
+      const fn = nombre.split(' ')[0];
+      this.innerHTML = `
+        <div style="padding:28px 0 8px;">
+          <p style="font-family:'Syne',sans-serif;font-size:20px;font-weight:600;color:var(--color-ivory);margin:0 0 10px;">
+            Gracias, ${fn}.
+          </p>
+          <p style="font-family:'DM Sans',sans-serif;font-weight:300;font-size:14px;color:var(--color-mist);line-height:1.65;margin:0 0 20px;">
+            Hemos recibido tu consulta. En breve recibirás un mensaje en WhatsApp con los próximos pasos.
+          </p>
+          <div style="display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--color-warm-sand);border:1px solid var(--color-warm-sand);padding:6px 12px;border-radius:2px;">
+            <span style="width:6px;height:6px;background:var(--color-warm-sand);border-radius:50%;animation:pulse 2s ease-in-out infinite;display:inline-block;flex-shrink:0;"></span>
+            SISTEMA ACTIVO
+          </div>
+        </div>`;
 
     } catch(err) {
       btn.disabled  = false;
@@ -1699,56 +1709,6 @@
       alert('Error al enviar. Inténtalo de nuevo.');
     }
   });
-
-  function renderResults(nombre, zona, a) {
-    const panel = document.getElementById('lead-results');
-    panel.style.display = 'block';
-
-    // Hora
-    document.getElementById('results-time').textContent =
-      new Date().toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-
-    // Score ring
-    const score = a.score ?? 0;
-    document.getElementById('score-val').textContent = score;
-    const arc = document.getElementById('score-arc');
-    const offset = 201.1 * (1 - score / 10);
-    const color  = score >= 7 ? '#4ade80' : score >= 4 ? '#fbbf24' : '#f87171';
-    setTimeout(() => {
-      arc.style.strokeDashoffset = offset;
-      arc.style.stroke = color;
-    }, 50);
-
-    // Badge
-    const badge = document.getElementById('results-badge');
-    if (a.cualificado) {
-      badge.className = 'results-status-badge badge-ok';
-      badge.textContent = '✓ Cualificado';
-    } else {
-      badge.className = 'results-status-badge badge-nurturing';
-      badge.textContent = '○ Nurturing';
-    }
-
-    // Análisis
-    document.getElementById('r-razon').textContent    = a.razon         || '—';
-    document.getElementById('r-siguiente').textContent = a.siguiente_paso || '—';
-
-    // Pills
-    const pills = [a.tipo_operacion, a.urgencia,
-      a.presupuesto_viable != null ? (a.presupuesto_viable ? 'Presupuesto viable' : 'Presupuesto a revisar') : null
-    ].filter(Boolean);
-    document.getElementById('r-meta').innerHTML =
-      pills.map(p => `<span class="r-pill">${p}</span>`).join('');
-
-    // WhatsApp preview
-    const fn = nombre.split(' ')[0];
-    const z  = zona || a.zona || 'Madrid';
-    document.getElementById('wa-msg').textContent = a.cualificado
-      ? `Hola ${fn} 👋\n\nGracias por tu interés en propiedades en ${z}.\n\nHe revisado tu consulta y me gustaría hablar contigo esta semana. Tenemos opciones que encajan exactamente con lo que buscas.\n\n¿Tienes 20 minutos para una llamada?\n\nUn saludo,\nEquipo Élite Homes`
-      : `Hola ${fn} 👋\n\nGracias por contactar con Élite Homes. Hemos recibido tu consulta sobre propiedades en ${z}.\n\nEstamos aquí cuando estés listo para avanzar. Sin prisa.\n\nUn saludo,\nEquipo Élite Homes`;
-
-    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
 </script>
 
 </body>

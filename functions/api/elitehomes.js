@@ -46,13 +46,14 @@ export async function onRequestPost({ request, env }) {
     fuente:   body.fuente    || 'elitehomesdemo.com',
   };
 
-  // 1. Análisis IA con Claude
+  // 1. Análisis IA
   const analysis = await analyzeWithClaude(payload, env);
 
-  // 2. Guardar en Supabase + enviar email (en paralelo, sin bloquear respuesta)
+  // 2. Supabase + email + WhatsApp (en paralelo)
   await Promise.allSettled([
     saveToSupabase(payload, analysis, env),
     sendEmail(payload, analysis, env),
+    sendWhatsApp(payload, analysis, env),
   ]);
 
   return new Response(
@@ -130,6 +131,35 @@ function defaultAnalysis() {
     presupuesto_viable: false,
     siguiente_paso: 'Revisar manualmente y contactar en 24h.',
   };
+}
+
+// ─── WhatsApp: mensaje de bienvenida con preguntas ────────────────────────────
+
+async function sendWhatsApp(payload, analysis, env) {
+  if (!env.WHATSAPP_ENDPOINT) return; // configurar cuando Evolution API esté lista
+
+  const nombre = payload.nombre.split(' ')[0];
+  const zona   = payload.zona || 'Madrid';
+
+  // Mensaje diferente según cualificación
+  const mensaje = analysis?.cualificado
+    ? `Hola ${nombre} 👋\n\nGracias por contactar con Élite Homes. He revisado tu consulta sobre propiedades en ${zona}.\n\nPara encontrarte exactamente lo que buscas necesito hacerte 3 preguntas rápidas:\n\n1️⃣ ¿Cuál es tu presupuesto máximo?\n2️⃣ ¿Tienes hipoteca aprobada o necesitas financiación?\n3️⃣ ¿Para cuándo necesitarías estar instalado?\n\nResponde cuando puedas, en menos de 24h te tengo opciones concretas.\n\nUn saludo,\nEquipo Élite Homes`
+    : `Hola ${nombre} 👋\n\nGracias por contactar con Élite Homes. Hemos recibido tu consulta sobre propiedades en ${zona}.\n\nCuando estés listo para avanzar, estaremos encantados de ayudarte. ¿Puedes contarnos un poco más sobre lo que buscas?\n\n• ¿Compra o alquiler?\n• ¿Zona preferida?\n• ¿Presupuesto aproximado?\n\nUn saludo,\nEquipo Élite Homes`;
+
+  // Normalizar teléfono: añadir +34 si no tiene prefijo
+  let telefono = payload.telefono.replace(/[\s\-\.]/g, '');
+  if (!telefono.startsWith('+')) telefono = '+34' + telefono;
+
+  try {
+    await fetch(`${env.WHATSAPP_ENDPOINT}/message/sendText/${env.WHATSAPP_INSTANCE || 'elitehomes'}`, {
+      method: 'POST',
+      headers: {
+        'apikey': env.WHATSAPP_API_KEY || '',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ number: telefono, text: mensaje }),
+    });
+  } catch { /* silencioso — WhatsApp es opcional */ }
 }
 
 // ─── Supabase: guardar lead ────────────────────────────────────────────────────
