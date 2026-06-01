@@ -146,9 +146,9 @@ async function sendWhatsApp(payload, analysis, env) {
     ? `Hola ${nombre} 👋\n\nGracias por contactar con Élite Homes. He revisado tu consulta sobre propiedades en ${zona}.\n\nPara encontrarte exactamente lo que buscas necesito hacerte 3 preguntas rápidas:\n\n1️⃣ ¿Cuál es tu presupuesto máximo?\n2️⃣ ¿Tienes hipoteca aprobada o necesitas financiación?\n3️⃣ ¿Para cuándo necesitarías estar instalado?\n\nResponde cuando puedas, en menos de 24h te tengo opciones concretas.\n\nUn saludo,\nEquipo Élite Homes`
     : `Hola ${nombre} 👋\n\nGracias por contactar con Élite Homes. Hemos recibido tu consulta sobre propiedades en ${zona}.\n\nCuando estés listo para avanzar, estaremos encantados de ayudarte. ¿Puedes contarnos un poco más sobre lo que buscas?\n\n• ¿Compra o alquiler?\n• ¿Zona preferida?\n• ¿Presupuesto aproximado?\n\nUn saludo,\nEquipo Élite Homes`;
 
-  // Normalizar teléfono: añadir +34 si no tiene prefijo
-  let telefono = payload.telefono.replace(/[\s\-\.]/g, '');
-  if (!telefono.startsWith('+')) telefono = '+34' + telefono;
+  // Normalizar teléfono: Evolution API espera solo dígitos con código de país (sin +)
+  let telefono = payload.telefono.replace(/[\s\-\.\+]/g, '');
+  if (!telefono.startsWith('34') && telefono.length === 9) telefono = '34' + telefono;
 
   try {
     await fetch(`${env.WHATSAPP_ENDPOINT}/message/sendText/${env.WHATSAPP_INSTANCE || 'elitehomes'}`, {
