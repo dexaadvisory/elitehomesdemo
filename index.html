@@ -528,6 +528,34 @@
     border:1px solid var(--color-warm-sand);
     padding:2px 6px;border-radius:2px;font-size:10px;
   }
+  .form-consent{
+    display:flex;align-items:flex-start;gap:12px;
+    margin-top:16px;
+    padding:14px 16px;
+    border:1px solid var(--color-carbon);
+    border-radius:2px;
+    background:rgba(255,255,255,0.02);
+  }
+  .form-consent input[type="checkbox"]{
+    width:15px;height:15px;min-width:15px;
+    margin-top:2px;
+    accent-color:var(--color-warm-sand);
+    cursor:pointer;
+  }
+  .form-consent label{
+    font-family:'DM Sans',sans-serif;
+    font-size:12px;font-weight:300;
+    color:var(--color-mist);
+    line-height:1.6;
+    cursor:pointer;
+  }
+  .form-consent label a{
+    color:var(--color-warm-sand);
+    text-decoration:none;
+    border-bottom:1px solid transparent;
+    transition:border-color 0.2s;
+  }
+  .form-consent label a:hover{border-bottom-color:var(--color-warm-sand);}
 
   /* ============== FOOTER ============== */
   footer{
@@ -1058,6 +1086,14 @@
           <div class="field full">
             <label for="lead-message">Mensaje</label>
             <textarea id="lead-message" name="message" placeholder="Cuéntanos brevemente sobre tu propiedad: superficie, estado, plazos…"></textarea>
+          </div>
+          <div class="full">
+            <div class="form-consent">
+              <input type="checkbox" id="lead-consent" name="consent" required />
+              <label for="lead-consent">
+                Acepto recibir comunicaciones comerciales automatizadas por WhatsApp sobre inmuebles y servicios de Élite Homes. Entiendo que el seguimiento es gestionado mediante un sistema automático. Puedo revocar este consentimiento en cualquier momento respondiendo <strong>STOP</strong>. He leído y acepto la <a href="#" onclick="return false;">Política de Privacidad</a>.
+              </label>
+            </div>
           </div>
           <div class="full">
             <button type="submit" class="form-submit">Enviar consulta <span class="arrow">→</span></button>
@@ -1673,9 +1709,17 @@
     const telefono = document.getElementById('lead-phone').value.trim();
     const zona     = document.getElementById('lead-zone').value.trim();
     const mensaje  = document.getElementById('lead-message').value.trim();
+    const consent  = document.getElementById('lead-consent').checked;
+
+    if (!consent) {
+      btn.disabled = false;
+      btn.innerHTML = orig;
+      return;
+    }
 
     const payload = {
       nombre, telefono, zona, mensaje,
+      consent: true,
       timestamp: new Date().toISOString(),
       fuente:    'elitehomesdemo.com',
     };
