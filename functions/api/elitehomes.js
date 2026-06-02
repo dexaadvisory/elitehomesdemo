@@ -65,7 +65,7 @@ export async function onRequestPost({ request, env }) {
 // ─── Claude: cualificación de lead ────────────────────────────────────────────
 
 async function analyzeWithClaude(payload, env) {
-  if (!env.OPENAI_API_KEY) return defaultAnalysis();
+  if (!env.OPENAI_API_KEY) return defaultAnalysis(payload);
 
   const systemPrompt = `Eres el sistema de cualificación de leads de una agencia inmobiliaria española.
 Tu función es analizar el lead y devolver ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
@@ -82,7 +82,15 @@ CRITERIOS DE PUNTUACIÓN (suma de 1 a 10):
 REGLA: un lead está CUALIFICADO si score >= 6.
 
 FORMATO DE RESPUESTA — exactamente este JSON, nada más:
-{"cualificado":true,"score":8,"razon":"Lead con hipoteca aprobada, fecha límite clara y mensaje específico","tipo_operacion":"compra","urgencia":"1-3_meses","presupuesto_viable":true,"siguiente_paso":"Llamar hoy antes de las 14h. Alta probabilidad de cierre."}
+{"cualificado":true,"score":8,"razon":"Lead con hipoteca aprobada, fecha límite clara y mensaje específico","tipo_operacion":"compra","urgencia":"1-3_meses","presupuesto_viable":true,"siguiente_paso":"Llamar hoy antes de las 14h. Alta probabilidad de cierre.","whatsapp_mensaje":"Hola [Nombre] 👋\n\nGracias por contactar con Élite Homes. He visto que buscas [referencia concreta al mensaje]. Para encontrarte exactamente lo que necesitas, te hago 3 preguntas rápidas:\n\n1️⃣ [pregunta relevante]\n2️⃣ [pregunta relevante]\n3️⃣ [pregunta relevante]\n\nResponde cuando puedas y en menos de 24h te tengo opciones.\n\nUn saludo,\nEquipo Élite Homes"}
+
+REGLAS para whatsapp_mensaje:
+- Saluda por el NOMBRE real del lead (solo el primer nombre)
+- Menciona ESPECÍFICAMENTE lo que ha escrito en su mensaje (zona, tipo de inmueble, intención)
+- Haz 2-3 preguntas concretas y relevantes para cualificar: presupuesto, hipoteca, plazo, m², habitaciones, etc.
+- Tono cálido y profesional, sin ser excesivamente formal
+- Máximo 180 palabras
+- Firma siempre como "Equipo Élite Homes"
 
 Valores tipo_operacion: "compra" | "alquiler" | "inversion" | "desconocido"
 Valores urgencia: "inmediata" | "1-3_meses" | "6+_meses" | "explorando"`;
@@ -112,16 +120,18 @@ Email: ${payload.email ? 'Sí' : 'No'}`;
       }),
     });
 
-    if (!res.ok) return defaultAnalysis();
+    if (!res.ok) return defaultAnalysis(payload);
     const data = await res.json();
     const text = data.choices?.[0]?.message?.content || '{}';
     return JSON.parse(text);
   } catch {
-    return defaultAnalysis();
+    return defaultAnalysis(payload);
   }
 }
 
-function defaultAnalysis() {
+function defaultAnalysis(payload) {
+  const nombre = payload?.nombre?.split(' ')[0] || 'there';
+  const zona   = payload?.zona || 'la zona que nos has indicado';
   return {
     cualificado: false,
     score: 3,
@@ -130,21 +140,18 @@ function defaultAnalysis() {
     urgencia: 'explorando',
     presupuesto_viable: false,
     siguiente_paso: 'Revisar manualmente y contactar en 24h.',
+    whatsapp_mensaje: `Hola ${nombre} 👋\n\nGracias por contactar con Élite Homes. Hemos recibido tu consulta sobre propiedades en ${zona}.\n\nPara poder ayudarte mejor, ¿podrías contarnos un poco más?\n\n1️⃣ ¿Buscas compra o alquiler?\n2️⃣ ¿Cuál sería tu presupuesto aproximado?\n3️⃣ ¿Para cuándo lo necesitarías?\n\nUn saludo,\nEquipo Élite Homes`,
   };
 }
 
 // ─── WhatsApp: mensaje de bienvenida con preguntas ────────────────────────────
 
 async function sendWhatsApp(payload, analysis, env) {
-  if (!env.WHATSAPP_ENDPOINT) return; // configurar cuando Evolution API esté lista
+  if (!env.WHATSAPP_ENDPOINT) return;
 
-  const nombre = payload.nombre.split(' ')[0];
-  const zona   = payload.zona || 'Madrid';
-
-  // Mensaje diferente según cualificación
-  const mensaje = analysis?.cualificado
-    ? `Hola ${nombre} 👋\n\nGracias por contactar con Élite Homes. He revisado tu consulta sobre propiedades en ${zona}.\n\nPara encontrarte exactamente lo que buscas necesito hacerte 3 preguntas rápidas:\n\n1️⃣ ¿Cuál es tu presupuesto máximo?\n2️⃣ ¿Tienes hipoteca aprobada o necesitas financiación?\n3️⃣ ¿Para cuándo necesitarías estar instalado?\n\nResponde cuando puedas, en menos de 24h te tengo opciones concretas.\n\nUn saludo,\nEquipo Élite Homes`
-    : `Hola ${nombre} 👋\n\nGracias por contactar con Élite Homes. Hemos recibido tu consulta sobre propiedades en ${zona}.\n\nCuando estés listo para avanzar, estaremos encantados de ayudarte. ¿Puedes contarnos un poco más sobre lo que buscas?\n\n• ¿Compra o alquiler?\n• ¿Zona preferida?\n• ¿Presupuesto aproximado?\n\nUn saludo,\nEquipo Élite Homes`;
+  // Usar el mensaje personalizado generado por IA (o fallback genérico)
+  const mensaje = analysis?.whatsapp_mensaje
+    || `Hola ${payload.nombre.split(' ')[0]} 👋\n\nGracias por contactar con Élite Homes. En breve nos ponemos en contacto contigo.\n\nUn saludo,\nEquipo Élite Homes`;
 
   // Normalizar teléfono: Evolution API espera solo dígitos con código de país (sin +)
   let telefono = payload.telefono.replace(/[\s\-\.\+]/g, '');
