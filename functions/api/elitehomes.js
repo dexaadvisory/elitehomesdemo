@@ -6,7 +6,11 @@
  *   OPENAI_API_KEY     — GPT-4o (cualificación IA)
  *   SUPABASE_URL       — URL del proyecto Supabase
  *   SUPABASE_ANON_KEY  — Clave anon de Supabase
+ *   NOTION_API_KEY     — Guardar leads cualificados en Notion
  *   RESEND_API_KEY     — Email de notificación (opcional)
+ *   WHATSAPP_ENDPOINT  — URL pública Evolution API
+ *   WHATSAPP_INSTANCE  — Nombre de instancia (default: elitehomes)
+ *   WHATSAPP_API_KEY   — API key de Evolution API
  */
 
 const CORS = {
@@ -14,6 +18,8 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
+
+const NOTION_DB_ID = '5d3c4f5eaf6f4f2b9c52367384116ca4';
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS });
@@ -47,11 +53,12 @@ export async function onRequestPost({ request, env }) {
   };
 
   // 1. Análisis IA
-  const analysis = await analyzeWithClaude(payload, env);
+  const analysis = await analyzeWithAI(payload, env);
 
-  // 2. Supabase + email + WhatsApp (en paralelo)
+  // 2. Acciones en paralelo: Supabase (todos) + Notion (solo cualificados) + email + WhatsApp
   await Promise.allSettled([
     saveToSupabase(payload, analysis, env),
+    analysis?.cualificado ? saveToNotion(payload, analysis, env) : Promise.resolve(),
     sendEmail(payload, analysis, env),
     sendWhatsApp(payload, analysis, env),
   ]);
@@ -62,43 +69,48 @@ export async function onRequestPost({ request, env }) {
   );
 }
 
-// ─── Claude: cualificación de lead ────────────────────────────────────────────
+// ─── GPT-4o: cualificación + mensaje WhatsApp personalizado ──────────────────
 
-async function analyzeWithClaude(payload, env) {
+async function analyzeWithAI(payload, env) {
   if (!env.OPENAI_API_KEY) return defaultAnalysis(payload);
 
   const systemPrompt = `Eres el sistema de cualificación de leads de una agencia inmobiliaria española.
-Tu función es analizar el lead y devolver ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
+Devuelve ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
 
-CRITERIOS DE PUNTUACIÓN (suma de 1 a 10):
-+3  Presupuesto concreto mencionado o hipoteca aprobada confirmada
+CRITERIOS DE PUNTUACIÓN (1 a 10):
++3  Presupuesto concreto o hipoteca aprobada confirmada
 +2  Urgencia clara: fecha límite, mudanza inminente, compra decidida
 +2  Mensaje específico sobre el inmueble (zona, m², precio, características)
 +1  Teléfono proporcionado
 +1  Email proporcionado
 -3  Señales de baja intención: "solo mirando", "sin presupuesto", "curiosidad"
--1  Mensaje completamente genérico sin referencia al inmueble
+-1  Mensaje completamente genérico
 
-REGLA: un lead está CUALIFICADO si score >= 6.
+REGLA: CUALIFICADO si score >= 6.
 
-FORMATO DE RESPUESTA — exactamente este JSON, nada más:
-{"cualificado":true,"score":8,"razon":"Lead con hipoteca aprobada, fecha límite clara y mensaje específico","tipo_operacion":"compra","urgencia":"1-3_meses","presupuesto_viable":true,"siguiente_paso":"Llamar hoy antes de las 14h. Alta probabilidad de cierre.","whatsapp_mensaje":"Hola [Nombre] 👋\n\nGracias por contactar con Élite Homes. He visto que buscas [referencia concreta al mensaje]. Para encontrarte exactamente lo que necesitas, te hago 3 preguntas rápidas:\n\n1️⃣ [pregunta relevante]\n2️⃣ [pregunta relevante]\n3️⃣ [pregunta relevante]\n\nResponde cuando puedas y en menos de 24h te tengo opciones.\n\nUn saludo,\nEquipo Élite Homes"}
-
-REGLAS para whatsapp_mensaje:
-- Saluda por el NOMBRE real del lead (solo el primer nombre)
-- Menciona ESPECÍFICAMENTE lo que ha escrito en su mensaje (zona, tipo de inmueble, intención)
-- Haz 2-3 preguntas concretas y relevantes para cualificar: presupuesto, hipoteca, plazo, m², habitaciones, etc.
-- Tono cálido y profesional, sin ser excesivamente formal
-- Máximo 180 palabras
-- Firma siempre como "Equipo Élite Homes"
+FORMATO — exactamente este JSON, nada más:
+{"cualificado":true,"score":8,"razon":"Breve explicación interna para el agente","tipo_operacion":"compra","urgencia":"1-3_meses","presupuesto_viable":true,"siguiente_paso":"Acción concreta para el agente","whatsapp_mensaje":"Texto listo para enviar al lead"}
 
 Valores tipo_operacion: "compra" | "alquiler" | "inversion" | "desconocido"
-Valores urgencia: "inmediata" | "1-3_meses" | "6+_meses" | "explorando"`;
+Valores urgencia: "inmediata" | "1-3_meses" | "6+_meses" | "explorando"
 
-  const userMsg = `LEAD A CUALIFICAR:
+REGLAS para whatsapp_mensaje:
+- Saluda por el PRIMER NOMBRE del lead
+- En 1 frase, muestra que has leído su consulta con referencia DIRECTA a lo que escribió (zona, tipo, intención)
+- Haz EXACTAMENTE 2 preguntas, las mínimas para cualificar. NO preguntes lo que ya sabes:
+  · Si mencionó "comprar" → no preguntes compra/alquiler
+  · Si mencionó una zona concreta → no preguntes por zona
+  · Si mencionó un presupuesto → no preguntes presupuesto
+  · Prioridad: (1) presupuesto máximo, (2) plazo/urgencia, (3) hipoteca/financiación, (4) m²/habitaciones
+- Tono: cálido y directo, como un agente real desde el móvil. No suenes a bot
+- Sin asteriscos ni markdown. Texto plano, emojis solo si es natural
+- Máximo 100 palabras
+- Firma: "Equipo Élite Homes"`;
+
+  const userMsg = `LEAD:
 Nombre: ${payload.nombre}
 Mensaje: ${payload.mensaje || 'Sin mensaje'}
-Zona de interés: ${payload.zona || 'No especificada'}
+Zona: ${payload.zona || 'No especificada'}
 Teléfono: ${payload.telefono ? 'Sí' : 'No'}
 Email: ${payload.email ? 'Sí' : 'No'}`;
 
@@ -111,7 +123,7 @@ Email: ${payload.email ? 'Sí' : 'No'}`;
       },
       body: JSON.stringify({
         model: 'gpt-4o',
-        max_tokens: 500,
+        max_tokens: 600,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt },
@@ -130,8 +142,8 @@ Email: ${payload.email ? 'Sí' : 'No'}`;
 }
 
 function defaultAnalysis(payload) {
-  const nombre = payload?.nombre?.split(' ')[0] || 'there';
-  const zona   = payload?.zona || 'la zona que nos has indicado';
+  const nombre = payload?.nombre?.split(' ')[0] || '';
+  const zona   = payload?.zona || 'la zona indicada';
   return {
     cualificado: false,
     score: 3,
@@ -140,20 +152,70 @@ function defaultAnalysis(payload) {
     urgencia: 'explorando',
     presupuesto_viable: false,
     siguiente_paso: 'Revisar manualmente y contactar en 24h.',
-    whatsapp_mensaje: `Hola ${nombre} 👋\n\nGracias por contactar con Élite Homes. Hemos recibido tu consulta sobre propiedades en ${zona}.\n\nPara poder ayudarte mejor, ¿podrías contarnos un poco más?\n\n1️⃣ ¿Buscas compra o alquiler?\n2️⃣ ¿Cuál sería tu presupuesto aproximado?\n3️⃣ ¿Para cuándo lo necesitarías?\n\nUn saludo,\nEquipo Élite Homes`,
+    whatsapp_mensaje: `Hola ${nombre} 👋\n\nGracias por contactar con Élite Homes. Hemos recibido tu consulta sobre ${zona}.\n\nPara poder ayudarte mejor:\n\n1️⃣ ¿Cuál sería tu presupuesto aproximado?\n2️⃣ ¿Para cuándo lo necesitarías?\n\nUn saludo,\nEquipo Élite Homes`,
   };
 }
 
-// ─── WhatsApp: mensaje de bienvenida con preguntas ────────────────────────────
+// ─── Notion: guardar leads CUALIFICADOS ──────────────────────────────────────
+
+async function saveToNotion(payload, analysis, env) {
+  if (!env.NOTION_API_KEY) return;
+
+  // Mapear score numérico a etiqueta Notion
+  const score = analysis?.score ?? 0;
+  const scoreIA = score >= 7 ? 'Alta' : score >= 4 ? 'Media' : 'Baja';
+
+  // Mapear zona del formulario a opciones del select en Notion
+  const zonaMap = {
+    'Madrid Centro': 'Madrid Centro',
+    'Salamanca': 'Salamanca',
+    'Chamberí': 'Chamberí',
+    'Retiro': 'Retiro',
+    'Chamartín': 'Chamartín',
+  };
+  const zonaNotion = zonaMap[payload.zona] || 'Otras zonas';
+
+  const analisisTexto = [
+    `Score: ${score}/10`,
+    analysis?.razon || '',
+    analysis?.siguiente_paso ? `→ ${analysis.siguiente_paso}` : '',
+  ].filter(Boolean).join('\n');
+
+  try {
+    await fetch('https://api.notion.com/v1/pages', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.NOTION_API_KEY}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        parent: { database_id: NOTION_DB_ID },
+        properties: {
+          'Nombre':      { title:        [{ text: { content: payload.nombre } }] },
+          'Teléfono':    { phone_number: payload.telefono },
+          'Mensaje':     { rich_text:    [{ text: { content: payload.mensaje || '' } }] },
+          'Zona':        { select:       { name: zonaNotion } },
+          'Estado':      { select:       { name: 'Nuevo' } },
+          'Score IA':    { select:       { name: scoreIA } },
+          'Análisis IA': { rich_text:    [{ text: { content: analisisTexto } }] },
+          'Fuente':      { rich_text:    [{ text: { content: payload.fuente } }] },
+          'Fecha':       { date:         { start: payload.fecha.split('T')[0] } },
+        },
+      }),
+    });
+  } catch { /* silencioso */ }
+}
+
+// ─── WhatsApp: mensaje IA personalizado ──────────────────────────────────────
 
 async function sendWhatsApp(payload, analysis, env) {
   if (!env.WHATSAPP_ENDPOINT) return;
 
-  // Usar el mensaje personalizado generado por IA (o fallback genérico)
   const mensaje = analysis?.whatsapp_mensaje
     || `Hola ${payload.nombre.split(' ')[0]} 👋\n\nGracias por contactar con Élite Homes. En breve nos ponemos en contacto contigo.\n\nUn saludo,\nEquipo Élite Homes`;
 
-  // Normalizar teléfono: Evolution API espera solo dígitos con código de país (sin +)
+  // Normalizar teléfono: solo dígitos con código de país sin +
   let telefono = payload.telefono.replace(/[\s\-\.\+]/g, '');
   if (!telefono.startsWith('34') && telefono.length === 9) telefono = '34' + telefono;
 
@@ -166,10 +228,10 @@ async function sendWhatsApp(payload, analysis, env) {
       },
       body: JSON.stringify({ number: telefono, text: mensaje }),
     });
-  } catch { /* silencioso — WhatsApp es opcional */ }
+  } catch { /* silencioso */ }
 }
 
-// ─── Supabase: guardar lead ────────────────────────────────────────────────────
+// ─── Supabase: guardar todos los leads ───────────────────────────────────────
 
 async function saveToSupabase(payload, analysis, env) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return;
@@ -184,29 +246,29 @@ async function saveToSupabase(payload, analysis, env) {
         'Prefer': 'return=minimal',
       },
       body: JSON.stringify({
-        nombre:           payload.nombre,
-        telefono:         payload.telefono,
-        email:            payload.email || null,
-        mensaje_original: payload.mensaje,
-        portal_origen:    payload.fuente,
-        inmueble_zona:    payload.zona,
-        estado:           analysis?.cualificado ? 'cualificado' : 'nurturing',
-        score_ia:         analysis?.score,
-        razon_ia:         analysis?.razon,
-        tipo_operacion:   analysis?.tipo_operacion || 'desconocido',
-        urgencia:         analysis?.urgencia || 'explorando',
+        nombre:             payload.nombre,
+        telefono:           payload.telefono,
+        email:              payload.email || null,
+        mensaje_original:   payload.mensaje,
+        portal_origen:      payload.fuente,
+        inmueble_zona:      payload.zona,
+        estado:             analysis?.cualificado ? 'cualificado' : 'nurturing',
+        score_ia:           analysis?.score,
+        razon_ia:           analysis?.razon,
+        tipo_operacion:     analysis?.tipo_operacion || 'desconocido',
+        urgencia:           analysis?.urgencia || 'explorando',
         presupuesto_viable: analysis?.presupuesto_viable,
         siguiente_paso_ia:  analysis?.siguiente_paso,
-        agencia_nombre:   'Élite Homes',
-        agencia_agente:   'Sistema DEXA',
-        modo:             'demo',
-        nurturing_day:    0,
+        agencia_nombre:     'Élite Homes',
+        agencia_agente:     'Sistema DEXA',
+        modo:               'demo',
+        nurturing_day:      0,
       }),
     });
   } catch { /* silencioso */ }
 }
 
-// ─── Resend: email de notificación ────────────────────────────────────────────
+// ─── Resend: email de notificación interna ────────────────────────────────────
 
 async function sendEmail(payload, analysis, env) {
   if (!env.RESEND_API_KEY) return;
