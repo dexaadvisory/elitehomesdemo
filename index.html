@@ -1709,11 +1709,15 @@
     const telefono = document.getElementById('lead-phone').value.trim();
     const zona     = document.getElementById('lead-zone').value.trim();
     const mensaje  = document.getElementById('lead-message').value.trim();
-    const consent  = document.getElementById('lead-consent').checked;
+    const consentEl = document.getElementById('lead-consent');
+    const consent   = consentEl ? consentEl.checked : false;
 
     if (!consent) {
       btn.disabled = false;
       btn.innerHTML = orig;
+      if (!consentEl) {
+        alert('Error de página. Recarga la página (Cmd+Shift+R) e inténtalo de nuevo.');
+      }
       return;
     }
 
