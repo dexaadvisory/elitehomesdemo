@@ -52,10 +52,17 @@ export async function onRequestPost({ request, env }) {
     fuente:   body.fuente    || 'elitehomesdemo.com',
   };
 
-  // 1. Análisis IA
+  // 1. Comprobar si es un lead que vuelve (reactivación)
+  const leadPrevio = await buscarLeadFrio(payload.telefono, env);
+  if (leadPrevio) {
+    payload.es_retorno    = true;
+    payload.contexto_prev = leadPrevio;
+  }
+
+  // 2. Análisis IA
   const analysis = await analyzeWithAI(payload, env);
 
-  // 2. Acciones en paralelo: Supabase (todos) + Notion (solo cualificados) + email + WhatsApp
+  // 3. Acciones en paralelo: Supabase (todos) + Notion (solo cualificados) + email + WhatsApp
   await Promise.allSettled([
     saveToSupabase(payload, analysis, env),
     analysis?.cualificado ? saveToNotion(payload, analysis, env) : Promise.resolve(),
@@ -107,12 +114,16 @@ REGLAS para whatsapp_mensaje:
 - Máximo 100 palabras
 - Firma: "Equipo Élite Homes"`;
 
+  const retornoCtx = payload.es_retorno
+    ? `\n\nCONTEXTO ESPECIAL — LEAD QUE VUELVE: Este contacto ya nos consultó antes y fue marcado como frío. Su consulta anterior: "${payload.contexto_prev?.mensaje_original || ''}". Genera el whatsapp_mensaje como una bienvenida de vuelta cálida: menciona que ya habíais hablado, muestra que recuerdas lo que buscaba, y ofrece novedades concretas. NO hagas preguntas genéricas — ya le conoces.`
+    : '';
+
   const userMsg = `LEAD:
 Nombre: ${payload.nombre}
 Mensaje: ${payload.mensaje || 'Sin mensaje'}
 Zona: ${payload.zona || 'No especificada'}
 Teléfono: ${payload.telefono ? 'Sí' : 'No'}
-Email: ${payload.email ? 'Sí' : 'No'}`;
+Email: ${payload.email ? 'Sí' : 'No'}${retornoCtx}`;
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -345,4 +356,25 @@ function esc(s) {
   return s == null ? '' : String(s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
   );
+}
+
+// ─── Supabase: buscar lead frío por teléfono (reactivación) ──────────────────
+
+async function buscarLeadFrio(telefono, env) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return null;
+  try {
+    let t = telefono.replace(/[\s\-\.\+]/g, '');
+    if (!t.startsWith('34') && t.length === 9) t = '34' + t;
+    const res = await fetch(
+      `${env.SUPABASE_URL}/rest/v1/leads?telefono=eq.${encodeURIComponent(t)}&estado=eq.frio&order=created_at.desc&limit=1&select=nombre,mensaje_original,inmueble_zona,tipo_operacion`,
+      {
+        headers: {
+          'apikey':        env.SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+        }
+      }
+    );
+    const data = await res.json();
+    return data?.[0] || null;
+  } catch { return null; }
 }
