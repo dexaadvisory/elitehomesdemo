@@ -1,6 +1,6 @@
 /**
  * Cloudflare Pages Function — Élite Homes · DEXA Advisory
- * Captura, cualificación IA y almacenamiento de leads
+ * Captura, cualificación IA y almacenamiento de leads · v2 (2026-06-03)
  *
  * Variables de entorno (Cloudflare Pages → Settings → Environment Variables):
  *   OPENAI_API_KEY     — GPT-4o (cualificación IA)
