@@ -19,7 +19,7 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-const NOTION_DB_ID = '5d3c4f5eaf6f4f2b9c52367384116ca4';
+const NOTION_DB_ID = '374a0e0909a3817a82e6d8269573a46d'; // Élite Homes CRM — cuenta DEXA Advisory
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS });
