@@ -63,15 +63,17 @@ export async function onRequestPost({ request, env }) {
   const analysis = await analyzeWithAI(payload, env);
 
   // 3. Acciones en paralelo: Supabase (todos) + Notion (solo cualificados) + email + WhatsApp
-  await Promise.allSettled([
+  const results = await Promise.allSettled([
     saveToSupabase(payload, analysis, env),
     analysis?.cualificado ? saveToNotion(payload, analysis, env) : Promise.resolve(),
     sendEmail(payload, analysis, env),
     sendWhatsApp(payload, analysis, env),
   ]);
 
+  const waDebug = results[3];
+
   return new Response(
-    JSON.stringify({ ok: true, analysis: { ...analysis, zona: payload.zona } }),
+    JSON.stringify({ ok: true, analysis: { ...analysis, zona: payload.zona }, _waDebug: waDebug }),
     { headers: { 'Content-Type': 'application/json', ...CORS } }
   );
 }
@@ -231,7 +233,7 @@ async function sendWhatsApp(payload, analysis, env) {
   if (!telefono.startsWith('34') && telefono.length === 9) telefono = '34' + telefono;
 
   try {
-    await fetch(`${env.WHATSAPP_ENDPOINT}/message/sendText/${env.WHATSAPP_INSTANCE || 'elitehomes'}`, {
+    const waRes = await fetch(`${env.WHATSAPP_ENDPOINT}/message/sendText/${env.WHATSAPP_INSTANCE || 'elitehomes'}`, {
       method: 'POST',
       headers: {
         'apikey': env.WHATSAPP_API_KEY || '',
@@ -239,7 +241,11 @@ async function sendWhatsApp(payload, analysis, env) {
       },
       body: JSON.stringify({ number: telefono, text: mensaje }),
     });
-  } catch { /* silencioso */ }
+    const waBody = await waRes.text();
+    return { status: waRes.status, body: waBody, telefono, mensajeLen: mensaje.length };
+  } catch (e) {
+    return { error: String(e), telefono };
+  }
 }
 
 // ─── Supabase: guardar todos los leads ───────────────────────────────────────
